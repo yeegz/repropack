@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; img-src data:; media-src data:; style-src &#39;unsafe-inline&#39;; script-src &#39;sha256-akrWTiXcHynbXoTnWUC4pmXhiGiGAjiIMhosqJ4HCcc=&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;">
+<meta name="referrer" content="no-referrer">
+<meta name="generator" content="ReproPack">
+<title>Checkout crashes after a declined card · ReproPack</title>
+<style>:root{
+  --paper:#F6F4EF;--surface:#FFFFFF;--sunk:#EFECE5;--ink:#16171A;--ink-2:#45474E;--ink-3:#72757D;--rule:#E2DED5;--rule-2:#D3CEC3;
+  --accent:#0C7A64;--accent-ink:#FFFFFF;--accent-soft:#DDEFE9;
+  --err:#C4352B;--err-soft:#FBE7E4;--crash:#93204F;--crash-soft:#F6E1EA;--warn:#A86A10;--warn-soft:#FAF0DC;--debug:#8A8D94;
+  --lane-log:#5B5F68;--lane-action:#0C7A64;--lane-span:#6A5ACD;
+  --radius:12px;--radius-sm:7px;
+  --font:"Schibsted Grotesk","Inter Variable",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#0B0C0F;--surface:#15171B;--sunk:#101215;--ink:#ECEAE4;--ink-2:#BDBBB4;--ink-3:#8C8B86;--rule:#25282E;--rule-2:#33363D;
+  --accent:#43C6A6;--accent-ink:#06231C;--accent-soft:#12302A;
+  --err:#FF7A6E;--err-soft:#33191A;--crash:#F27BAE;--crash-soft:#33182A;--warn:#F0B44C;--warn-soft:#2E2412;--debug:#7C7F86;
+  --lane-log:#A3A6AD;--lane-action:#43C6A6;--lane-span:#A99BFF;
+}}
+@media (prefers-contrast:more){:root{--ink-2:var(--ink);--ink-3:var(--ink-2);--rule:var(--ink-3);--rule-2:var(--ink-2)}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--font);font-feature-settings:"ss01","tnum" 0}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+@media (max-width:600px){.wrap{padding:0 16px}}
+.skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:var(--paper);padding:8px 12px;border-radius:8px;z-index:9}
+.skip:focus{left:16px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.mono{font-family:var(--mono);font-size:.88em;font-variant-ligatures:none}
+.muted{color:var(--ink-3)}.small{font-size:13px}.break{word-break:break-all}
+h1,h2,h3{font-weight:650;letter-spacing:-.01em;margin:0}
+h2{font-size:20px;margin:0 0 14px}h3{font-size:14px;margin:0 0 8px;color:var(--ink-2)}
+section{margin:44px 0}
+.bar{border-bottom:1px solid var(--rule);background:color-mix(in oklab,var(--paper) 86%,transparent);position:sticky;top:0;z-index:5;backdrop-filter:saturate(1.4) blur(10px)}
+.bar-in{display:flex;align-items:center;gap:10px;height:52px}
+.mark{color:var(--accent);display:inline-flex}.word{font-weight:700;letter-spacing:-.01em}.sep{color:var(--rule-2)}.crumb{color:var(--ink-3)}
+.chip{margin-left:auto;font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px}
+.chip.ok{background:var(--accent-soft);color:var(--accent)}.chip.bad{background:var(--err-soft);color:var(--err)}
+.banner{margin-top:24px;padding:14px 16px;border-radius:var(--radius);display:grid;gap:4px}
+.banner.bad{background:var(--err-soft);color:var(--ink);border:1px solid color-mix(in oklab,var(--err) 40%,transparent)}
+.hero{margin-top:40px}
+.eyebrow{margin:0 0 6px;color:var(--ink-3);font-weight:600;font-size:13.5px}
+h1{font-size:clamp(26px,4.2vw,38px);line-height:1.12;letter-spacing:-.022em;max-width:22ch;text-wrap:balance}
+.headline{margin:16px 0 0;padding:10px 14px;border-radius:var(--radius-sm);font-size:16px;max-width:70ch;border-left:3px solid}
+.headline.error{background:var(--err-soft);border-color:var(--err)}
+.headline.crash{background:var(--crash-soft);border-color:var(--crash)}
+.headline.calm{background:var(--accent-soft);border-color:var(--accent)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 28px;margin:20px 0 0}
+.meta div{display:grid}.meta dt{font-size:12px;color:var(--ink-3);font-weight:600}.meta dd{margin:0;font-size:14px}
+.glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden;margin-top:28px}
+.stat{background:var(--surface);padding:14px 16px;display:grid}
+.stat .n{font-size:26px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.stat .l{font-size:13px;color:var(--ink-3)}
+.stat.hot .n{color:var(--err)}
+.prose{max-width:72ch;white-space:pre-wrap}
+.steps{padding-left:22px;max-width:72ch}.steps li{margin:4px 0;padding-left:4px}
+.compare,.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:14px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:16px 18px;min-width:0}
+.card p{margin:0 0 8px}.card.wide{grid-column:1/-1}
+.card.actual{border-color:color-mix(in oklab,var(--err) 35%,var(--rule))}
+.notes{list-style:none;padding:0;display:grid;gap:6px}.notes li{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius-sm);padding:8px 12px}
+.notes .t{margin-right:10px;color:var(--ink-3)}
+.timeline{margin:0;background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:14px 10px 4px;overflow-x:auto}
+.timeline svg{width:100%;min-width:640px;height:auto;display:block;font-family:var(--font)}
+.timeline .lab{font-size:12px;fill:var(--ink-2);font-weight:600}.timeline .cnt{fill:var(--ink-3);font-weight:500}
+.timeline .track{stroke:var(--rule);stroke-width:1}
+.timeline .axis line{stroke:var(--rule-2)}.timeline .axis text{font-size:11px;fill:var(--ink-3);font-family:var(--mono)}
+.lane rect{fill:var(--lane-log)}.lane-error rect{fill:var(--err)}.lane-crash rect{fill:var(--crash)}.lane-warn rect{fill:var(--warn)}
+.lane-breadcrumb rect{fill:var(--lane-action)}.lane-span rect{fill:var(--lane-span)}.lane-other rect{fill:var(--debug)}
+.metric path{fill:none;stroke:var(--accent);stroke-width:1.6;stroke-linejoin:round}
+.pin rect{fill:var(--accent)}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.att{margin:0;background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+.att img,.att video{width:100%;height:auto;max-height:420px;object-fit:contain;background:var(--sunk);display:block}
+.att figcaption{padding:10px 14px 12px;display:grid;gap:2px}.att .t{font-weight:600}
+.att .note{margin-top:6px;font-size:13.5px;padding-left:10px;border-left:2px solid var(--accent)}
+.placeholder{padding:28px 16px;color:var(--ink-3);background:var(--sunk);font-size:13.5px}
+.textatt{margin:0;max-height:260px;overflow:auto;padding:12px 14px;background:var(--sunk);font:12px/1.5 var(--mono);white-space:pre-wrap;word-break:break-word}
+.sechead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.sechead h2{margin-bottom:10px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 12px}
+.filters fieldset{border:0;margin:0;padding:0;display:flex;gap:6px;flex-wrap:wrap}
+.search input{font:inherit;font-size:14px;padding:7px 12px;border-radius:9px;border:1px solid var(--rule-2);background:var(--surface);color:var(--ink);width:min(320px,80vw)}
+.lv,.toggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:5px 10px;border-radius:999px;border:1px solid var(--rule-2);background:var(--surface);cursor:pointer;user-select:none}
+.lv input,.toggle input{margin:0;accent-color:var(--accent)}
+.tablewrap{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);overflow:auto;max-height:70vh}
+table.events{width:100%;border-collapse:collapse;font-size:13.5px}
+.events thead th{position:sticky;top:0;background:var(--surface);text-align:left;font-size:12px;color:var(--ink-3);font-weight:600;padding:9px 12px;border-bottom:1px solid var(--rule);z-index:1}
+.events td{padding:7px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+.events tr:last-child td{border-bottom:0}
+.events td.t{white-space:nowrap;color:var(--ink-3)}
+.events .kind{color:var(--ink-3);white-space:nowrap}
+.events .msg{word-break:break-word;min-width:260px}
+.events tr.r-error td,.events tr.r-fatal td{background:color-mix(in oklab,var(--err-soft) 55%,transparent)}
+.events tr.k-crash td{background:var(--crash-soft)}
+.lvl{font-size:11.5px;font-weight:700;letter-spacing:.02em;padding:2px 7px;border-radius:6px;background:var(--sunk);color:var(--ink-2)}
+.lvl-error,.lvl-fatal{background:var(--err);color:#fff}.lvl-warn{background:var(--warn-soft);color:var(--warn)}
+.lvl-debug,.lvl-trace{color:var(--debug)}
+.src{font-size:12px;color:var(--ink-3);margin-left:4px}
+.inl{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:2px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}.inl b{font-weight:500;color:var(--ink-2)}
+details>summary{cursor:pointer;list-style:none}details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"";display:inline-block;width:0;height:0;border:4px solid transparent;border-left:5px solid var(--ink-3);margin-right:7px;transform:translateY(-1px)}
+details[open]>summary::before{transform:rotate(90deg) translateX(-1px)}
+.err{margin:10px 0 4px;padding:10px 12px;background:var(--sunk);border-radius:var(--radius-sm)}
+.stack{margin:6px 0 0;padding-left:20px;font-size:12.5px}.stack li{margin:2px 0}.stack .fn{font-family:var(--mono);font-weight:600}
+.cause{margin:8px 0 0;color:var(--ink-2)}
+.raw{font:12px/1.45 var(--mono);white-space:pre-wrap;max-height:300px;overflow:auto}
+.attrs,.kv{display:grid;gap:4px 16px;margin:8px 0 0}
+.attrs div,.kv div{display:grid;grid-template-columns:minmax(110px,max-content) 1fr;gap:12px}
+.attrs dt,.kv dt{color:var(--ink-3);font-size:13px}.attrs dd,.kv dd{margin:0;word-break:break-word}
+.attrs dt,.attrs dd{font-family:var(--mono);font-size:12.5px}
+table.mini{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 10px}
+.mini th{text-align:left;color:var(--ink-3);font-weight:600;font-size:12px;padding:4px 0;border-bottom:1px solid var(--rule)}
+.mini td{padding:5px 8px 5px 0;border-bottom:1px solid var(--rule)}.mini .num{text-align:right;font-variant-numeric:tabular-nums}
+.warnline{background:var(--warn-soft);padding:8px 10px;border-radius:var(--radius-sm);font-size:13.5px}
+.empty{padding:28px;text-align:center;color:var(--ink-3);background:var(--surface);border:1px dashed var(--rule-2);border-radius:var(--radius)}
+.foot{border-top:1px solid var(--rule);padding-top:18px;padding-bottom:40px;color:var(--ink-3);font-size:13px}
+tr[hidden]{display:none}
+@media (forced-colors:active){.lvl,.chip,.headline,.stat{border:1px solid CanvasText}.lane rect,.pin rect{fill:CanvasText}.metric path{stroke:CanvasText}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{.bar,.filters,.skip{display:none}.tablewrap{max-height:none;overflow:visible}details{open:true}body{background:#fff}}
+</style>
+</head>
+<body>
+<a class="skip" href="#events">Skip to events</a>
+<header class="bar">
+  <div class="wrap bar-in">
+    <span class="mark" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18"><rect x="2.5" y="4.5" width="15" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 4.5V3.4c0-.5.4-.9.9-.9h6.2c.5 0 .9.4.9.9v1.1" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6.5 10.5h7M6.5 13h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+    <span class="word">ReproPack</span>
+    <span class="sep" aria-hidden="true">/</span>
+    <span class="crumb">Report summary</span>
+    
+    <span class="chip ok" title="Every file matches the SHA-256 recorded in the manifest">Integrity verified</span>
+    
+  </div>
+</header>
+
+<main class="wrap">
+
+
+<section class="hero" aria-labelledby="title">
+  <p class="eyebrow">Shopfront 4.2.1 (4210)</p>
+  <h1 id="title">Checkout crashes after a declined card</h1>
+  <p class="headline crash">The app crashed: assignment to entry in nil map</p>
+  <dl class="meta">
+    <div><dt>Started</dt><dd>Wed 25 Nov 2026, 09:41:00 UTC</dd></div>
+    <div><dt>Covers</dt><dd>7.7 s</dd></div>
+    <div><dt>System</dt><dd>macOS 15.2 · arm64</dd></div>
+    <div><dt>Report ID</dt><dd class="mono">01937a5e-0000-7000-8000-000000000002</dd></div>
+  </dl>
+</section>
+
+<section class="glance" aria-label="At a glance">
+  <div class="stat hot"><span class="n">3</span><span class="l">errors</span></div>
+  <div class="stat"><span class="n">1</span><span class="l">warnings</span></div>
+  <div class="stat"><span class="n">14</span><span class="l">events</span></div>
+  <div class="stat"><span class="n">2</span><span class="l">attachments</span></div>
+  
+</section>
+
+
+<section aria-labelledby="what">
+  <h2 id="what">What happened</h2>
+  <p class="prose">After the payment fails, the app freezes for a moment and then closes.</p>
+  
+    
+    <h3>Steps to reproduce</h3>
+    <ol class="steps"><li>Add any item to the cart</li><li>Apply promo code WINTER</li><li>Pay with the test card ending 0002 (always declined)</li></ol>
+    
+    
+    <div class="compare">
+      <div class="card"><h3>Expected</h3><p>A message says the card was declined and I can try another card.</p></div>
+      <div class="card actual"><h3>Actually happened</h3><p>The screen freezes, then the app closes.</p></div>
+    </div>
+    
+    <p class="muted">Happens: Every time</p>
+  
+  
+  <h3>Notes</h3>
+  <ul class="notes"><li><span class="mono t">0:08.200</span>Started after updating to 4.2.1 this morning.</li></ul>
+  
+</section>
+
+
+
+<section aria-labelledby="tl">
+  <h2 id="tl">Timeline</h2>
+  <p class="muted small">Each row shows when things happened. Taller, darker marks mean more events at that moment.</p>
+  <figure class="timeline">
+    <svg viewBox="0 0 980 242" role="img" aria-labelledby="tl-desc" preserveAspectRatio="xMinYMin meet">
+      <desc id="tl-desc">Timeline of 7.7 s starting Wed 25 Nov 2026, 09:41:00 UTC. Crashes: 1, busiest near 0:07.619; Errors: 2, busiest near 0:06.971; Warnings: 1, busiest near 0:05.187; Logs: 2, busiest near 0:00.405; Actions: 3, busiest near 0:00.000; Spans: 1, busiest near 0:03.404; memory.rss (last 392.9 MB, range 173.6 MB–392.9 MB). 1 screenshots or recordings are marked on the top row.</desc>
+      <g class="axis">
+        <line x1="120" x2="960" y1="224" y2="224"/>
+        <text x="120" y="238">0:00</text>
+        <text x="960" y="238" text-anchor="end">7.7 s</text>
+      </g>
+      
+      <text class="lab" x="0" y="22">Evidence</text>
+      <g class="pin"><title>Checkout after pressing Pay · 0:07.200</title><rect x="905" y="11" width="10" height="10" rx="2" transform="rotate(45 910 16)"/></g>
+      
+      
+      <g class="lane lane-crash">
+        <line class="track" x1="120" x2="960" y1="47" y2="47"/>
+        <text class="lab" x="0" y="51">Crashes <tspan class="cnt">1</tspan></text>
+        <rect x="942" y="37" width="6" height="20" rx="1.5" opacity="1.00"><title>1 crashes near 0:07.619</title></rect>
+      </g>
+      
+      <g class="lane lane-error">
+        <line class="track" x1="120" x2="960" y1="73" y2="73"/>
+        <text class="lab" x="0" y="77">Errors <tspan class="cnt">2</tspan></text>
+        <rect x="872" y="63" width="6" height="20" rx="1.5" opacity="1.00"><title>2 errors near 0:06.971</title></rect>
+      </g>
+      
+      <g class="lane lane-warn">
+        <line class="track" x1="120" x2="960" y1="99" y2="99"/>
+        <text class="lab" x="0" y="103">Warnings <tspan class="cnt">1</tspan></text>
+        <rect x="680" y="89" width="6" height="20" rx="1.5" opacity="1.00"><title>1 warnings near 0:05.187</title></rect>
+      </g>
+      
+      <g class="lane lane-log">
+        <line class="track" x1="120" x2="960" y1="125" y2="125"/>
+        <text class="lab" x="0" y="129">Logs <tspan class="cnt">2</tspan></text>
+        <rect x="163" y="115" width="6" height="20" rx="1.5" opacity="1.00"><title>1 logs near 0:00.405</title></rect><rect x="321" y="115" width="6" height="20" rx="1.5" opacity="1.00"><title>1 logs near 0:01.864</title></rect>
+      </g>
+      
+      <g class="lane lane-breadcrumb">
+        <line class="track" x1="120" x2="960" y1="151" y2="151"/>
+        <text class="lab" x="0" y="155">Actions <tspan class="cnt">3</tspan></text>
+        <rect x="120" y="141" width="6" height="20" rx="1.5" opacity="1.00"><title>1 actions near 0:00.000</title></rect><rect x="312" y="141" width="6" height="20" rx="1.5" opacity="1.00"><title>1 actions near 0:01.783</title></rect><rect x="478" y="141" width="6" height="20" rx="1.5" opacity="1.00"><title>1 actions near 0:03.323</title></rect>
+      </g>
+      
+      <g class="lane lane-span">
+        <line class="track" x1="120" x2="960" y1="177" y2="177"/>
+        <text class="lab" x="0" y="181">Spans <tspan class="cnt">1</tspan></text>
+        <rect x="487" y="167" width="6" height="20" rx="1.5" opacity="1.00"><title>1 spans near 0:03.404</title></rect>
+      </g>
+      
+      
+      <g class="metric">
+        <line class="track" x1="120" x2="960" y1="212" y2="212"/>
+        <text class="lab" x="0" y="207">memory.rss</text>
+        <path d="M218.2 212.0 L436.4 211.3 L654.5 207.5 L927.3 194.0"><title>memory.rss (last 392.9 MB, range 173.6 MB–392.9 MB)</title></path>
+      </g>
+      
+    </svg>
+  </figure>
+</section>
+
+
+
+<section aria-labelledby="ev">
+  <h2 id="ev">Evidence</h2>
+  <div class="gallery">
+  
+    <figure class="att">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAGQCAIAAACxkUZyAAATq0lEQVR4nOzXwQ0BYRzEUWRr4KQAXShBDbqgALpQgxJ04bYX2WSpwmluf3ER2Xx5c5oOXn7dOPQzMzMz&#43;&#43;8WOQAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAA/jnAXc73rY6H3GLP0zm32PK&#43;yy322lxzi20f&#43;9xit/UlVwErYAWsgBWwAlbAClgBK2AFrIAVsAL&#43;XMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMICnB/B8HPp8BayAFbACVsAKWAErYAWsgBWwAlbACrjdAgYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIAB3DrAb/br0AYAGASAYLr/sDUEjQLFBOTcb3B5B&#43;yAHbADdsAO2AE7YAfsgB2wA3bADngO&#43;GX8bgfsgB2wA3bADtgBO2AH7IAdsAN2wA747gEDGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAN4B7jYr0MTAMEoCqMIDiIY3X8Uo&#43;AGFjGbbtfywv/OTXeDwwdgAAMYwAAGMIABDGAAAxjAAP4H8JxTvWXdcs2s0c5jz1XAClgBK2AFrIAVsAJWwAq4toABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAA7gTwNNzX/kKWAErYAWsgBWwAlbAClgBK2AFrIAV8LgFDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABvAHgF/27VAFQBiMwmixiMWm4Ps/mqDNIlbTjYLJMXf&#43;lb3B4YYPwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAZwEYC7fL6&#43;fhjzdc4554rddR75WsAWsAVsAVvAFrAF/PcFrAPWAeuAdcA6YB2wDlgHrAPWAeuAdcA6YB2wDlgHrAPWAeuAdcA6YB2wDlgHrAPWAeuAdcA6YB2wDlgHrAPWAeuAdcA6YB2wDlgHrAPWAeuAdcA64FcdsOd5Xi1vmpd8XZW3b2u&#43;FrAFbAFbwBawBWwBt72AAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAnwG&#43;2blDFACBIIzCxdsZjJ7RaPBIgjaLWE2TBLHIsMM3W/YGjz&#43;8B8AADMAADMAADMAADMAADMBZAG6mhLXMU3yd&#43;&#43;X6YYyvBWwBW8AWsAVsAVvAFrAFbAFbwBUXMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADcA6AO51enV6dXp1end5np9cCtoAtYAvYAraALWAL2AIuuIC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaC1oLWgtaBfW9Ce53lZb9/W&#43;FrAFrAFbAFbwBawBWwBW8AtL2AeMA&#43;YB8wD5gHzgHnAPGAeMA&#43;YB8wD5gHzgHnAPGAeMA&#43;YB8wD5gHzgHnAPGAeMA&#43;YB8wD5gHzgHnAPGAeMA&#43;YB8wD5gHzgHnAPGAeMA&#43;YB8wD5gF/8oCv84ivc67I3ezcoQ2AQBBEUYMhGPpCIKkRiaA/1HRAsgv3Vl0HL3/EKWAFrIAVsAJWwApYAStgBdy6gAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAPcDuOwnrHlZ83TOOefKrupnRhO0CdoEbYI2QZugTdAmaBO0CdoEbYI2QZugx5igAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAbw5wCe8uh&#43;93Xm6X5&#43;237kqYAVsAJWwApYAStgBayAFbACVsDvFTCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABPBbAD/t1bAIgDABRFMFGbNx/SVMY01rIjWDU8K66DR4fwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAB/B&#43;DpPPb8rlvWLdfMzOy1tVpyFbACVsAKWAErYAU8egEDGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABfAM85/ReqyVXAStgBayAFbACVsAKWAErYAWsgBWwAn6&#43;gAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEM4F8BfLFfxyYAhFAQBZO7SOy/UDEyMdoOROEzG20HwwMwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAJcD&#43;Mu5vX/MXDMzs2dbveUqYAWsgBWwAlbACrh6AQMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAA/g0wJu9u0VhGAjiOEphq0rP0yPU9bB1OUJOE5EPExMIjF8IZEnm/dW4lY&#43;fWgADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgLMBXBq/X73&#43;943TzKr2&#43;XdxKmAFrIAVsAJWwApYAStgBZy8gPcCBjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEM4GsB/FimIe5T9xznOM3MzJptfb/iVMAKWAErYAWsgBXw3QsYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAA/gYwCWOLP8vKmAFrIAVsAJWwApYAStgBayAFbACTlrAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQzgxgBv7N2hEYRAEERRc/YsGRICBjQYQiBDLAkgqBZEwNTuGzUZdH31FLACVsAKWAErYAWsgBWwAlbAClgBK2AFrIAVsAJWwApYAStgBayAFbACVsAKWAErYAWsgBWwAlbAClgBK2AFrIAVsAJWwApYAStgBayAFbACVsAKWAErYAWsgBWwAlbAClgBK2AFrIAVsAJWwApYAStgBayAFbACVsAKWAErYAWsgBWwAlbAClgBK2AFrIAVsAJWwApYAStgBayAyxTwL49zzrV8wzblde5157znVcAKWAErYAWsgBVw6wUM5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/EB&#43;ID&#43;QH8gP5AfyA/mB/BVB/pp3rUfeLu6/jHkVsAJWwApYAStgBayAvyhgA2yADbABNsAG2AAbYANsgA2wATbABtgAdz7AzwDf7NuxCQAgFENB3H9YG7G2ElxAJP7rssHxigAYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGcBDAfsB&#43;wH7AfsB&#43;wM9&#43;wH6x5y9WAStgBayAFbACVsAK&#43;HoBAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQzgOIDbHH1vBayAFbACVsAKWAErYAWsgBWwAlbACvjfAgYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAQxgAAMYwAAGMIABDGAAAxjAAAYwgAEMYAADGMAABjCAAVwA4MV&#43;HQsAAAAACPO3jqF/GCNgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAiZgAh4CbgD6wk8x8fl2tQAAAABJRU5ErkJggg==" alt="Checkout after pressing Pay, captured at 0:07.200" loading="lazy" width="640" height="400">
+      
+      <figcaption>
+        <span class="t">Checkout after pressing Pay</span>
+        <span class="muted small">screenshot · 0:07.200 · 5.0 KB · marked up</span>
+        <span class="note">The spinner never stops before it closes.</span>
+      </figcaption>
+    </figure>
+  
+    <figure class="att">
+      <pre class="textatt" tabindex="0" aria-label="checkout.log (last lines) contents">09:41:03.460 INFO  POST /v1/payments start
+09:41:05.210 WARN  provider slow, retry 1
+09:41:06.980 ERROR 502 card declined by gateway
+</pre>
+      
+      <figcaption>
+        <span class="t">checkout.log (last lines)</span>
+        <span class="muted small">log · 0:07.700 · 133 B</span>
+        
+      </figcaption>
+    </figure>
+  
+  </div>
+</section>
+
+
+<section id="events" aria-labelledby="evt">
+  <div class="sechead">
+    <h2 id="evt">Events</h2>
+    <span class="muted small" id="shown" aria-live="polite">14 shown</span>
+  </div>
+  <form class="filters" role="search" aria-label="Filter events" hidden>
+    <label class="search"><span class="vh">Search events</span><input type="search" id="q" placeholder="Search messages" autocomplete="off"></label>
+    <fieldset><legend class="vh">Levels</legend>
+      <label class="lv lv-debug"><input type="checkbox" name="lv" value="debug" checked><span>debug</span></label><label class="lv lv-info"><input type="checkbox" name="lv" value="info" checked><span>info</span></label><label class="lv lv-warn"><input type="checkbox" name="lv" value="warn" checked><span>warn</span></label><label class="lv lv-error"><input type="checkbox" name="lv" value="error" checked><span>error</span></label><label class="lv lv-fatal"><input type="checkbox" name="lv" value="fatal" checked><span>fatal</span></label>
+    </fieldset>
+    <label class="toggle"><input type="checkbox" id="problems"><span>Problems only</span></label>
+  </form>
+  
+  <div class="tablewrap" tabindex="0" role="region" aria-label="Event list">
+  <table class="events">
+    <thead><tr><th scope="col">Time</th><th scope="col">Level</th><th scope="col">Type</th><th scope="col">Message</th></tr></thead>
+    <tbody>
+    
+    <tr class="r-info k-breadcrumb" data-level="info" data-kind="breadcrumb" data-s="opened checkout ui">
+      <td class="mono t" title="09:41:00.000 UTC">0:00.000</td>
+      <td><span class="lvl lvl-info">info</span></td>
+      <td class="kind">Action</td>
+      <td class="msg">
+        
+        <span class="m">Opened Checkout</span> <span class="src">ui</span>
+        <span class="inl"><span><b>screen</b>=checkout</span></span>
+        
+      </td>
+    </tr>
+    
+    <tr class="r-info k-log" data-level="info" data-kind="log" data-s="get /v1/cart 200 api">
+      <td class="mono t" title="09:41:00.420 UTC">0:00.420</td>
+      <td><span class="lvl lvl-info">info</span></td>
+      <td class="kind">Log</td>
+      <td class="msg">
+        
+        <span class="m">GET /v1/cart 200</span> <span class="src">api</span>
+        <span class="inl"><span><b>ms</b>=84</span><span><b>route</b>=/v1/cart</span><span><b>status</b>=200</span></span>
+        
+      </td>
+    </tr>
+    
+    <tr class="r-info k-metric" data-level="info" data-kind="metric" data-s="memory.rss = 1.82e&#43;08 by app">
+      <td class="mono t" title="09:41:00.900 UTC">0:00.900</td>
+      <td><span class="lvl lvl-info">—</span></td>
+      <td class="kind">Metric</td>
+      <td class="msg">
+        
+        <span class="m">memory.rss = 1.82e&#43;08 By</span> <span class="src">app</span>
+        
+        
+      </td>
+    </tr>
+    
+    <tr class="r-info k-breadcrumb" data-level="info" data-kind="breadcrumb" data-s="applied promo code ui">
+      <td class="mono t" title="09:41:01.800 UTC">0:01.800</td>
+      <td><span class="lvl lvl-info">info</span></td>
+      <td class="kind">Action</td>
+      <td class="msg">
+        
+        <span class="m">Applied promo code</span> <span class="src">ui</span>
+        <span class="inl"><span><b>code</b>=WINTER</span><span><b>discount_pct</b>=15</span></span>
+        
+      </td>
+    </tr>
+    
+    <tr class="r-debug k-log" data-level="debug" data-kind="log" data-s="recalculated totals pricing">
+      <td class="mono t" title="09:41:01.910 UTC">0:01.910</td>
+      <td><span class="lvl lvl-debug">debug</span></td>
+      <td class="kind">Log</td>
+      <td class="msg">
+        
+        <span class="m">recalculated totals</span> <span class="src">pricing</span>
+        <span class="inl"><span><b>currency</b>=EUR</span><span><b>subtotal_minor</b>=12900</span></span>
+        
+      </td>
+    </tr>
+    
+    <tr class="r-info k-metric" data-level="info" data-kind="metric" data-s="memory.rss = 1.91e&#43;08 by app">
+      <td class="mono t" title="09:41:02.900 UTC">0:02.900</td>
+      <td><span class="lvl lvl-info">—</span></td>
+      <td class="kind">Metric</td>
+      <td class="msg">
+        
+        <span class="m">memory.rss = 1.91e&#43;08 By</span> <span class="src">app</span>
+        
+        
+      </td>
+    </tr>
+    
+    <tr class="r-info k-breadcrumb" data-level="info" data-kind="breadcrumb" data-s="pressed pay ui">
+      <td class="mono t" title="09:41:03.400 UTC">0:03.400</td>
+      <td><span class="lvl lvl-info">info</span></td>
+      <td class="kind">Action</td>
+      <td class="msg">
+        
+        <span class="m">Pressed Pay</span> <span class="src">ui</span>
+        
+        
+      </td>
+    </tr>
+    
+    <tr class="r-info k-span" data-level="info" data-kind="span" data-s="post /v1/payments (1.8 s) api">
+      <td class="mono t" title="09:41:03.460 UTC">0:03.460</td>
+      <td><span class="lvl lvl-info">—</span></td>
+      <td class="kind">Span</td>
+      <td class="msg">
+        
+        <details>
+          <summary><span class="m">POST /v1/payments (1.8 s)</span> <span class="src">api</span></summary>
+          
+          <p class="muted small">Span POST /v1/payments · 1.8 s · 502</p>
+          
+          
+        </details>
+        
+      </td>
+    </tr>
+    
+    <tr class="r-warn k-log" data-level="warn" data-kind="log" data-s="payment provider slow; retrying api">
+      <td class="mono t" title="09:41:05.210 UTC">0:05.210</td>
+      <td><span class="lvl lvl-warn">warn</span></td>
+      <td class="kind">Log</td>
+      <td class="msg">
+        
+        <span class="m">payment provider slow; retrying</span> <span class="src">api</span>
+        <span class="inl"><span><b>attempt</b>=1</span><span><b>ms</b>=1750</span></span>
+        
+      </td>
+    </tr>
+    
+    <tr class="r-info k-metric" data-level="info" data-kind="metric" data-s="memory.rss = 2.4e&#43;08 by app">
+      <td class="mono t" title="09:41:04.900 UTC">0:04.900</td>
+      <td><span class="lvl lvl-info">—</span></td>
+      <td class="kind">Metric</td>
+      <td class="msg">
+        
+        <span class="m">memory.rss = 2.4e&#43;08 By</span> <span class="src">app</span>
+        
+        
+      </td>
+    </tr>
+    
+    <tr class="r-error k-log" data-level="error" data-kind="log" data-s="post /v1/payments 502: card declined by gateway api">
+      <td class="mono t" title="09:41:06.980 UTC">0:06.980</td>
+      <td><span class="lvl lvl-error">error</span></td>
+      <td class="kind">Log</td>
+      <td class="msg">
+        
+        <span class="m">POST /v1/payments 502: card declined by gateway</span> <span class="src">api</span>
+        <span class="inl"><span><b>authorization</b>=[REDACTED:sensitive-key]</span><span><b>route</b>=/v1/payments</span><span><b>status</b>=502</span></span>
+        
+      </td>
+    </tr>
+    
+    <tr class="r-error k-error" data-level="error" data-kind="error" data-s="payment failed checkout">
+      <td class="mono t" title="09:41:07.010 UTC">0:07.010</td>
+      <td><span class="lvl lvl-error">error</span></td>
+      <td class="kind">Error</td>
+      <td class="msg">
+        
+        <details>
+          <summary><span class="m">Payment failed</span> <span class="src">checkout</span></summary>
+          
+          <div class="err">
+            <p><strong>*payments.GatewayError: </strong>confirm payment: gateway returned 502</p>
+            <ol class="stack"><li><span class="fn">(*Client).Confirm</span> <span class="mono muted">payments/client.go:142</span></li><li><span class="fn">(*Checkout).Pay</span> <span class="mono muted">checkout/pay.go:88</span></li></ol>
+            <p class="cause">Caused by: *url.Error: Post &#34;https://gateway.example/confirm&#34;: EOF</p>
+            
+          </div>
+          
+          
+          
+          
+        </details>
+        
+      </td>
+    </tr>
+    
+    <tr class="r-info k-metric" data-level="info" data-kind="metric" data-s="memory.rss = 4.12e&#43;08 by app">
+      <td class="mono t" title="09:41:07.400 UTC">0:07.400</td>
+      <td><span class="lvl lvl-info">—</span></td>
+      <td class="kind">Metric</td>
+      <td class="msg">
+        
+        <span class="m">memory.rss = 4.12e&#43;08 By</span> <span class="src">app</span>
+        
+        
+      </td>
+    </tr>
+    
+    <tr class="r-fatal k-crash" data-level="fatal" data-kind="crash" data-s="panic: assignment to entry in nil map checkout">
+      <td class="mono t" title="09:41:07.650 UTC">0:07.650</td>
+      <td><span class="lvl lvl-fatal">fatal</span></td>
+      <td class="kind">Crash</td>
+      <td class="msg">
+        
+        <details>
+          <summary><span class="m">panic: assignment to entry in nil map</span> <span class="src">checkout</span></summary>
+          
+          <div class="err">
+            <p><strong>runtime.Error: </strong>assignment to entry in nil map <span class="muted small">unhandled</span></p>
+            <ol class="stack"><li><span class="fn">(*Receipt).AddLine</span> <span class="mono muted">receipt/receipt.go:51</span></li><li><span class="fn">(*Checkout).showFailure</span> <span class="mono muted">checkout/pay.go:131</span></li></ol>
+            
+            
+          </div>
+          
+          
+          
+          
+        </details>
+        
+      </td>
+    </tr>
+    
+    </tbody>
+  </table>
+  </div>
+  
+</section>
+
+<section aria-labelledby="ctx">
+  <h2 id="ctx">Context</h2>
+  <div class="cols">
+    
+    <div class="card"><h3>Application</h3><dl class="kv">
+      <div><dt>Name</dt><dd>Shopfront</dd></div>
+      <div><dt>Version</dt><dd>4.2.1</dd></div>
+      <div><dt>Build</dt><dd>4210</dd></div>
+      <div><dt>Environment</dt><dd>production</dd></div>
+      
+      
+    </dl></div>
+    
+    <div class="card"><h3>System</h3><dl class="kv">
+      
+      <div><dt>OS</dt><dd>darwin 15.2</dd></div>
+      <div><dt>Architecture</dt><dd>arm64</dd></div>
+      
+      <div><dt>Locale</dt><dd>en_GB</dd></div>
+      <div><dt>Time zone</dt><dd>Europe/Berlin</dd></div>
+      
+      
+      <div><dt>Model</dt><dd>MacBookAir10,1</dd></div>
+      
+      <div><dt>Cores</dt><dd>8</dd></div>
+      <div><dt>Memory</dt><dd>16.00 GB</dd></div>
+      
+      <div><dt>Captured by</dt><dd>ReproPack 0.1.0</dd></div>
+    </dl></div>
+    
+    <div class="card wide"><h3>Custom fields</h3><dl class="kv">
+      <div><dt>cart.items</dt><dd>2</dd></div><div><dt>feature.new_checkout</dt><dd>true</dd></div><div><dt>region</dt><dd>eu-central</dd></div>
+    </dl></div>
+    
+  </div>
+</section>
+
+<section aria-labelledby="priv">
+  <h2 id="priv">Privacy and integrity</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>Redaction</h3>
+      
+        <p>Checked after redaction: no remaining matches for the <b>default</b> rules.</p>
+        <table class="mini"><thead><tr><th scope="col">Rule</th><th scope="col">Removed</th></tr></thead><tbody><tr><td>email addresses</td><td class="num">1</td></tr><tr><td>attribute values whose key names a secret</td><td class="num">1</td></tr></tbody></table>
+        <p>1 manual redaction on screenshots.</p>
+      
+      
+    </div>
+    <div class="card">
+      <h3>Files</h3>
+      <table class="mini"><thead><tr><th scope="col">File</th><th scope="col">Size</th><th scope="col">SHA-256</th></tr></thead><tbody>
+        <tr><td class="mono">events.jsonl</td><td class="num">2.9 KB</td><td class="mono" title="3a7aeac2668d60e7afd09d2936c9ac6dd6efc7c3391e3466e746e08675503d01">3a7aeac2668d…</td></tr>
+        <tr><td class="mono">attachments/shot-pay.png</td><td class="num">5.0 KB</td><td class="mono" title="23e01b31b0198d46ed5e2b05d109d40f40101cfe9cecf20df7673075bd31c304">23e01b31b019…</td></tr><tr><td class="mono">attachments/applog.txt</td><td class="num">133 B</td><td class="mono" title="3ae156e2a3712a5046a766b45b995a60cd8de6e33ca6548d6e288ff187f9c993">3ae156e2a371…</td></tr>
+      </tbody></table>
+      <p class="muted small mono break">sha256:d0fe6c9878091e3f2c19b39fc6d16569d1d1c1ab252526a2a2767bb12b30a67c</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="wrap foot">
+  <p>Generated 25 Nov 2026 05:21 UTC from a <span class="mono">.repropack</span> file (format 1.0). This page works offline, makes no network requests and runs no code from the report.</p>
+</footer>
+<script>(function () {
+  "use strict";
+  var form = document.querySelector(".filters");
+  var rows = Array.prototype.slice.call(document.querySelectorAll("table.events tbody tr"));
+  var shown = document.getElementById("shown");
+  if (!form || !rows.length) return;
+  form.hidden = false;
+  form.addEventListener("submit", function (e) { e.preventDefault(); });
+  var q = document.getElementById("q");
+  var problems = document.getElementById("problems");
+  var total = rows.length;
+  var timer = 0;
+  function apply() {
+    var text = q.value.trim().toLowerCase();
+    var levels = {};
+    Array.prototype.forEach.call(form.querySelectorAll("input[name=lv]"), function (c) { levels[c.value] = c.checked; });
+    var n = 0;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      var lv = r.getAttribute("data-level");
+      var kind = r.getAttribute("data-kind");
+      var ok = levels[lv] !== false;
+      if (ok && problems.checked) ok = lv === "error" || lv === "fatal" || lv === "warn" || kind === "error" || kind === "crash";
+      if (ok && text) ok = r.getAttribute("data-s").indexOf(text) !== -1;
+      r.hidden = !ok;
+      if (ok) n++;
+    }
+    shown.textContent = n === total ? total + " shown" : n + " of " + total + " shown";
+  }
+  form.addEventListener("change", apply);
+  q.addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(apply, 120); });
+})();
+</script>
+</body>
+</html>

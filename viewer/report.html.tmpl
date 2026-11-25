@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="{{.CSP}}">
+<meta name="referrer" content="no-referrer">
+<meta name="generator" content="ReproPack">
+<title>{{.M.Title}} · ReproPack</title>
+<style>{{.CSS}}</style>
+</head>
+<body>
+<a class="skip" href="#events">Skip to events</a>
+<header class="bar">
+  <div class="wrap bar-in">
+    <span class="mark" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18"><rect x="2.5" y="4.5" width="15" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 4.5V3.4c0-.5.4-.9.9-.9h6.2c.5 0 .9.4.9.9v1.1" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6.5 10.5h7M6.5 13h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+    <span class="word">ReproPack</span>
+    <span class="sep" aria-hidden="true">/</span>
+    <span class="crumb">Report summary</span>
+    {{if .S.Verified}}
+    <span class="chip ok" title="Every file matches the SHA-256 recorded in the manifest">Integrity verified</span>
+    {{else}}
+    <span class="chip bad">Integrity check failed</span>
+    {{end}}
+  </div>
+</header>
+
+<main class="wrap">
+{{if not .S.Verified}}
+<div class="banner bad" role="alert">
+  <strong>This report may have been altered or damaged.</strong>
+  <span>{{.S.Integrity}}</span>
+  <span>Treat everything below as unverified. Attachments are not shown.</span>
+</div>
+{{end}}
+
+<section class="hero" aria-labelledby="title">
+  <p class="eyebrow">{{if .AppLine}}{{.AppLine}}{{else}}{{.M.Producer.Name}}{{end}}</p>
+  <h1 id="title">{{.M.Title}}</h1>
+  <p class="headline {{if .S.FirstError}}{{if eq .S.FirstError.Kind "crash"}}crash{{else}}error{{end}}{{else}}calm{{end}}">{{.S.Headline}}</p>
+  <dl class="meta">
+    <div><dt>Started</dt><dd>{{.Started}}</dd></div>
+    <div><dt>Covers</dt><dd>{{.Duration}}</dd></div>
+    {{if .OSLine}}<div><dt>System</dt><dd>{{.OSLine}}</dd></div>{{end}}
+    <div><dt>Report ID</dt><dd class="mono">{{.M.ReportID}}</dd></div>
+  </dl>
+</section>
+
+<section class="glance" aria-label="At a glance">
+  <div class="stat {{if .ErrCount}}hot{{end}}"><span class="n">{{.ErrCount}}</span><span class="l">{{plural .ErrCount "error" "errors"}}</span></div>
+  <div class="stat"><span class="n">{{index .S.ByLevel "warn"}}</span><span class="l">warnings</span></div>
+  <div class="stat"><span class="n">{{.S.TotalEvents}}</span><span class="l">events</span></div>
+  <div class="stat"><span class="n">{{len .M.Attachments}}</span><span class="l">{{plural (len .M.Attachments) "attachment" "attachments"}}</span></div>
+  {{if .M.Events.Dropped}}<div class="stat"><span class="n">{{.M.Events.Dropped}}</span><span class="l">older events dropped by the buffer</span></div>{{end}}
+</section>
+
+{{if or .M.Description .M.Reproduction .NotesFree}}
+<section aria-labelledby="what">
+  <h2 id="what">What happened</h2>
+  {{if .M.Description}}<p class="prose">{{.M.Description}}</p>{{end}}
+  {{with .M.Reproduction}}
+    {{if .Steps}}
+    <h3>Steps to reproduce</h3>
+    <ol class="steps">{{range .Steps}}<li>{{.}}</li>{{end}}</ol>
+    {{end}}
+    {{if or .Expected .Actual}}
+    <div class="compare">
+      {{if .Expected}}<div class="card"><h3>Expected</h3><p>{{.Expected}}</p></div>{{end}}
+      {{if .Actual}}<div class="card actual"><h3>Actually happened</h3><p>{{.Actual}}</p></div>{{end}}
+    </div>
+    {{end}}
+    {{if .Frequency}}<p class="muted">Happens: {{.Frequency}}</p>{{end}}
+  {{end}}
+  {{if .NotesFree}}
+  <h3>Notes</h3>
+  <ul class="notes">{{range .NotesFree}}<li>{{if .At}}<span class="mono t">{{rel (deref2 .At)}}</span>{{end}}{{.Text}}</li>{{end}}</ul>
+  {{end}}
+</section>
+{{end}}
+
+{{if or .Lanes .Metrics .Pins}}
+<section aria-labelledby="tl">
+  <h2 id="tl">Timeline</h2>
+  <p class="muted small">Each row shows when things happened. Taller, darker marks mean more events at that moment.</p>
+  <figure class="timeline">
+    <svg viewBox="0 0 980 {{.TLHeight}}" role="img" aria-labelledby="tl-desc" preserveAspectRatio="xMinYMin meet">
+      <desc id="tl-desc">{{.TLDesc}}</desc>
+      <g class="axis">
+        <line x1="120" x2="960" y1="{{add .TLHeight -18}}" y2="{{add .TLHeight -18}}"/>
+        <text x="120" y="{{add .TLHeight -4}}">0:00</text>
+        <text x="960" y="{{add .TLHeight -4}}" text-anchor="end">{{.Duration}}</text>
+      </g>
+      {{if .Pins}}
+      <text class="lab" x="0" y="22">Evidence</text>
+      {{range .Pins}}<g class="pin"><title>{{.Title}} · {{.Offset}}</title><rect x="{{x .Pos}}" y="11" width="10" height="10" rx="2" transform="rotate(45 {{add (x .Pos) 5}} 16)"/></g>{{end}}
+      {{end}}
+      {{range .Lanes}}
+      <g class="lane lane-{{.Name}}">
+        <line class="track" x1="120" x2="960" y1="{{add .Y 13}}" y2="{{add .Y 13}}"/>
+        <text class="lab" x="0" y="{{add .Y 17}}">{{.Label}} <tspan class="cnt">{{.Total}}</tspan></text>
+        {{range .Bars}}<rect x="{{.X}}" y="{{.Y}}" width="{{.W}}" height="{{.H}}" rx="1.5" opacity="{{.Op}}"><title>{{.Title}}</title></rect>{{end}}
+      </g>
+      {{end}}
+      {{range .Metrics}}
+      <g class="metric">
+        <line class="track" x1="120" x2="960" y1="{{add .Y 22}}" y2="{{add .Y 22}}"/>
+        <text class="lab" x="0" y="{{add .Y 17}}">{{.Name}}</text>
+        <path d="{{.Path}}"><title>{{.Label}}</title></path>
+      </g>
+      {{end}}
+    </svg>
+  </figure>
+</section>
+{{end}}
+
+{{if .Atts}}
+<section aria-labelledby="ev">
+  <h2 id="ev">Evidence</h2>
+  <div class="gallery">
+  {{range .Atts}}
+    <figure class="att">
+      {{if eq .Kind "img"}}<img src="{{.DataURI}}" alt="{{if .Title}}{{.Title}}{{else}}{{.Role}}{{end}}, captured at {{.Offset}}" loading="lazy" {{if .Width}}width="{{.Width}}" height="{{.Height}}"{{end}}>
+      {{else if eq .Kind "video"}}<video src="{{.DataURI}}" controls preload="metadata" aria-label="{{.Title}}"></video>
+      {{else if eq .Kind "text"}}<pre class="textatt" tabindex="0" aria-label="{{.Title}} contents">{{.Text}}</pre>
+      {{else}}<div class="placeholder">{{.Note}}</div>{{end}}
+      <figcaption>
+        <span class="t">{{if .Title}}{{.Title}}{{else}}Untitled {{.Role}}{{end}}</span>
+        <span class="muted small">{{.Role}} · {{.Offset}} · {{bytes .Size}}{{if .Annotated}} · marked up{{end}}</span>
+        {{range .Notes}}<span class="note">{{.Text}}</span>{{end}}
+      </figcaption>
+    </figure>
+  {{end}}
+  </div>
+</section>
+{{end}}
+
+<section id="events" aria-labelledby="evt">
+  <div class="sechead">
+    <h2 id="evt">Events</h2>
+    <span class="muted small" id="shown" aria-live="polite">{{len .Rows}} shown{{if .Hidden}}, {{.Hidden}} more in the file{{end}}</span>
+  </div>
+  <form class="filters" role="search" aria-label="Filter events" hidden>
+    <label class="search"><span class="vh">Search events</span><input type="search" id="q" placeholder="Search messages" autocomplete="off"></label>
+    <fieldset><legend class="vh">Levels</legend>
+      {{range .Levels}}<label class="lv lv-{{.}}"><input type="checkbox" name="lv" value="{{.}}" checked><span>{{.}}</span></label>{{end}}
+    </fieldset>
+    <label class="toggle"><input type="checkbox" id="problems"><span>Problems only</span></label>
+  </form>
+  {{if .Rows}}
+  <div class="tablewrap" tabindex="0" role="region" aria-label="Event list">
+  <table class="events">
+    <thead><tr><th scope="col">Time</th><th scope="col">Level</th><th scope="col">Type</th><th scope="col">Message</th></tr></thead>
+    <tbody>
+    {{range .Rows}}
+    <tr class="r-{{levelc .Level}} k-{{.Kind}}" data-level="{{levelc .Level}}" data-kind="{{.Kind}}" data-s="{{.Search}}">
+      <td class="mono t" title="{{.Clock}} UTC">{{.Rel}}</td>
+      <td><span class="lvl lvl-{{levelc .Level}}">{{if .Level}}{{.Level}}{{else}}—{{end}}</span></td>
+      <td class="kind">{{kindLabel .Kind}}</td>
+      <td class="msg">
+        {{if .Detail}}
+        <details>
+          <summary><span class="m">{{.Message}}</span>{{if .Source}} <span class="src">{{.Source}}</span>{{end}}</summary>
+          {{with .Error}}
+          <div class="err">
+            <p><strong>{{if .Type}}{{.Type}}: {{end}}</strong>{{.Message}}{{if .Handled}} <span class="muted small">{{if deref .Handled}}handled{{else}}unhandled{{end}}</span>{{end}}</p>
+            {{if .Stack}}<ol class="stack">{{range .Stack}}<li><span class="fn">{{.Function}}</span> <span class="mono muted">{{.File}}:{{.Line}}</span></li>{{end}}</ol>{{end}}
+            {{with .Cause}}<p class="cause">Caused by: {{if .Type}}{{.Type}}: {{end}}{{.Message}}</p>{{end}}
+            {{if and .Raw (not .Stack)}}<pre class="raw">{{.Raw}}</pre>{{end}}
+          </div>
+          {{end}}
+          {{with .Span}}<p class="muted small">Span {{.Name}} · {{dur .Start .End}}{{if .Status}} · {{.Status}}{{end}}</p>{{end}}
+          {{if .Attrs}}<dl class="attrs">{{range .Attrs}}<div><dt>{{.K}}</dt><dd>{{.V}}</dd></div>{{end}}</dl>{{end}}
+          {{if .TraceID}}<p class="mono muted small">trace {{.TraceID}}{{if .SpanID}} · span {{.SpanID}}{{end}}</p>{{end}}
+        </details>
+        {{else}}
+        <span class="m">{{.Message}}</span>{{if .Source}} <span class="src">{{.Source}}</span>{{end}}
+        {{if .Attrs}}<span class="inl">{{range .Attrs}}<span><b>{{.K}}</b>={{.V}}</span>{{end}}</span>{{end}}
+        {{end}}
+      </td>
+    </tr>
+    {{end}}
+    </tbody>
+  </table>
+  </div>
+  {{else}}
+  <p class="empty">No diagnostic events were recorded in this report.</p>
+  {{end}}
+</section>
+
+<section aria-labelledby="ctx">
+  <h2 id="ctx">Context</h2>
+  <div class="cols">
+    {{with .M.App}}
+    <div class="card"><h3>Application</h3><dl class="kv">
+      <div><dt>Name</dt><dd>{{.Name}}</dd></div>
+      {{if .Version}}<div><dt>Version</dt><dd>{{.Version}}</dd></div>{{end}}
+      {{if .Build}}<div><dt>Build</dt><dd>{{.Build}}</dd></div>{{end}}
+      {{if .Environment}}<div><dt>Environment</dt><dd>{{.Environment}}</dd></div>{{end}}
+      {{if .Runtime}}<div><dt>Runtime</dt><dd>{{.Runtime}}</dd></div>{{end}}
+      {{if .PID}}<div><dt>Process</dt><dd class="mono">{{.PID}}</dd></div>{{end}}
+    </dl></div>
+    {{end}}
+    <div class="card"><h3>System</h3><dl class="kv">
+      {{with .M.OS}}
+      <div><dt>OS</dt><dd>{{.Name}} {{.Version}}</dd></div>
+      {{if .Arch}}<div><dt>Architecture</dt><dd>{{.Arch}}</dd></div>{{end}}
+      {{if .Kernel}}<div><dt>Kernel</dt><dd>{{.Kernel}}</dd></div>{{end}}
+      {{if .Locale}}<div><dt>Locale</dt><dd>{{.Locale}}</dd></div>{{end}}
+      {{if .Timezone}}<div><dt>Time zone</dt><dd>{{.Timezone}}</dd></div>{{end}}
+      {{end}}
+      {{with .M.Device}}
+      {{if .Model}}<div><dt>Model</dt><dd>{{.Model}}</dd></div>{{end}}
+      {{if .CPU}}<div><dt>CPU</dt><dd>{{.CPU}}</dd></div>{{end}}
+      {{if .CPUCores}}<div><dt>Cores</dt><dd>{{.CPUCores}}</dd></div>{{end}}
+      {{if .MemoryBytes}}<div><dt>Memory</dt><dd>{{bytes64 .MemoryBytes}}</dd></div>{{end}}
+      {{end}}
+      <div><dt>Captured by</dt><dd>{{.M.Producer.Name}} {{.M.Producer.Version}}{{if .M.Producer.SDK}} · {{.M.Producer.SDK}}{{end}}</dd></div>
+    </dl></div>
+    {{if .Context}}
+    <div class="card wide"><h3>Custom fields</h3><dl class="kv">
+      {{range .Context}}<div><dt>{{.K}}</dt><dd>{{.V}}</dd></div>{{end}}
+    </dl></div>
+    {{end}}
+  </div>
+</section>
+
+<section aria-labelledby="priv">
+  <h2 id="priv">Privacy and integrity</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>Redaction</h3>
+      {{with .M.Redaction}}
+        <p>{{if .Verified}}Checked after redaction: no remaining matches for the <b>{{.Policy}}</b> rules.{{else}}Redacted with the <b>{{.Policy}}</b> rules when recorded. Not re-verified.{{end}}</p>
+        {{if .Rules}}<table class="mini"><thead><tr><th scope="col">Rule</th><th scope="col">Removed</th></tr></thead><tbody>{{range .Rules}}<tr><td>{{if .Description}}{{.Description}}{{else}}{{.ID}}{{end}}</td><td class="num">{{.Matches}}</td></tr>{{end}}</tbody></table>{{else}}<p class="muted">No sensitive values were found.</p>{{end}}
+        {{if .Manual}}<p>{{.Manual}} manual {{plural .Manual "redaction" "redactions"}} on screenshots.</p>{{end}}
+      {{else}}
+        <p>No redaction was recorded for this report. Check it carefully before sharing.</p>
+      {{end}}
+      {{if .S.Unreviewed}}<p class="warnline">{{len .S.Unreviewed}} {{plural (len .S.Unreviewed) "image or recording has" "images or recordings have"}} not been marked as reviewed. Automatic redaction cannot see inside pictures.</p>{{end}}
+    </div>
+    <div class="card">
+      <h3>Files</h3>
+      <table class="mini"><thead><tr><th scope="col">File</th><th scope="col">Size</th><th scope="col">SHA-256</th></tr></thead><tbody>
+        <tr><td class="mono">{{.M.Events.Path}}</td><td class="num">{{bytes .M.Events.Size}}</td><td class="mono" title="{{.M.Events.SHA256}}">{{short .M.Events.SHA256}}…</td></tr>
+        {{range .M.Attachments}}<tr><td class="mono">{{.Path}}</td><td class="num">{{bytes .Size}}</td><td class="mono" title="{{.SHA256}}">{{short .SHA256}}…</td></tr>{{end}}
+      </tbody></table>
+      <p class="muted small mono break">{{.M.ContentDigest}}</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="wrap foot">
+  <p>Generated {{.Generated}} from a <span class="mono">.repropack</span> file (format {{.M.SpecVersion}}). This page works offline, makes no network requests and runs no code from the report.</p>
+</footer>
+<script>{{.JS}}</script>
+</body>
+</html>

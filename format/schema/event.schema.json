@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repropack.dev/schema/1.0/event.schema.json",
+  "title": "ReproPack event 1.0",
+  "description": "One line of events.jsonl. Lines are UTF-8 JSON objects separated by \\n, ordered by strictly increasing seq. Readers MUST ignore unknown properties and MUST display unknown kinds as custom.",
+  "type": "object",
+  "required": ["seq", "ts", "kind"],
+  "properties": {
+    "seq": { "type": "integer", "minimum": 1 },
+    "ts": { "type": "string", "format": "date-time" },
+    "kind": { "type": "string", "maxLength": 64, "description": "log | error | crash | metric | span | breadcrumb | marker | custom" },
+    "level": { "type": "string", "description": "trace | debug | info | warn | error | fatal" },
+    "source": { "type": "string" },
+    "msg": { "type": "string" },
+    "attrs": { "type": "object" },
+    "trace_id": { "type": "string" },
+    "span_id": { "type": "string" },
+    "error": { "$ref": "#/$defs/error" },
+    "metric": {
+      "type": "object", "required": ["name", "value"],
+      "properties": { "name": { "type": "string", "minLength": 1 }, "value": { "type": "number" }, "unit": { "type": "string", "description": "UCUM, as in OpenTelemetry (By, ms, %, {request})" } }
+    },
+    "span": {
+      "type": "object", "required": ["name", "start", "end"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 }, "trace_id": { "type": "string" }, "span_id": { "type": "string" },
+        "parent_span_id": { "type": "string" }, "start": { "type": "string", "format": "date-time" },
+        "end": { "type": "string", "format": "date-time" }, "status": { "type": "string" }
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "kind": { "const": "metric" } } }, "then": { "required": ["metric"] } },
+    { "if": { "properties": { "kind": { "const": "span" } } }, "then": { "required": ["span"] } },
+    { "if": { "properties": { "kind": { "enum": ["error", "crash"] } } }, "then": { "required": ["error"] } }
+  ],
+  "$defs": {
+    "error": {
+      "type": "object", "required": ["message"],
+      "properties": {
+        "type": { "type": "string" }, "message": { "type": "string" },
+        "stack": { "type": "array", "items": { "type": "object", "properties": { "function": { "type": "string" }, "file": { "type": "string" }, "line": { "type": "integer" }, "module": { "type": "string" } } } },
+        "cause": { "$ref": "#/$defs/error" },
+        "raw_stack": { "type": "string" },
+        "handled": { "type": "boolean" }
+      }
+    }
+  }
+}

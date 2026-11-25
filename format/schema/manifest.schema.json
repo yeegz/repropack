@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repropack.dev/schema/1.0/manifest.schema.json",
+  "title": "ReproPack manifest 1.0",
+  "description": "manifest.json at the root of a .repropack archive. Readers MUST ignore unknown properties (forward compatibility within major version 1).",
+  "type": "object",
+  "required": ["format", "spec_version", "report_id", "created_at", "title", "producer", "events", "content_digest"],
+  "properties": {
+    "format": { "const": "repropack" },
+    "spec_version": { "type": "string", "pattern": "^1\\.[0-9]+$" },
+    "report_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "title": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "description": { "type": "string", "maxLength": 65536 },
+    "producer": {
+      "type": "object", "required": ["name"],
+      "properties": { "name": { "type": "string", "minLength": 1 }, "version": { "type": "string" }, "sdk": { "type": "string" } }
+    },
+    "app": {
+      "type": "object", "required": ["name"],
+      "properties": {
+        "name": { "type": "string" }, "version": { "type": "string" }, "build": { "type": "string" },
+        "environment": { "type": "string" }, "runtime": { "type": "string" },
+        "pid": { "type": "integer" }, "started_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "os": {
+      "type": "object", "required": ["name"],
+      "properties": {
+        "name": { "type": "string" }, "version": { "type": "string" }, "build": { "type": "string" }, "arch": { "type": "string" },
+        "kernel": { "type": "string" }, "locale": { "type": "string" }, "timezone": { "type": "string" }
+      }
+    },
+    "device": {
+      "type": "object",
+      "properties": {
+        "model": { "type": "string" }, "cpu": { "type": "string" }, "cpu_cores": { "type": "integer", "minimum": 0 },
+        "memory_bytes": { "type": "integer", "minimum": 0 }, "displays": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "reproduction": {
+      "type": "object",
+      "properties": {
+        "steps": { "type": "array", "items": { "type": "string" } },
+        "expected": { "type": "string" }, "actual": { "type": "string" }, "frequency": { "type": "string" }
+      }
+    },
+    "context": {
+      "type": "object", "maxProperties": 256,
+      "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
+    },
+    "annotations": {
+      "type": "array", "maxItems": 1000,
+      "items": {
+        "type": "object", "required": ["id", "text"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 }, "text": { "type": "string", "maxLength": 65536 },
+          "at": { "type": "string", "format": "date-time" }, "attachment_id": { "type": "string" }, "author": { "type": "string" }
+        }
+      }
+    },
+    "events": {
+      "type": "object", "required": ["path", "sha256", "size", "count"],
+      "properties": {
+        "path": { "const": "events.jsonl" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size": { "type": "integer", "minimum": 0 },
+        "count": { "type": "integer", "minimum": 0 },
+        "first": { "type": "string", "format": "date-time" },
+        "last": { "type": "string", "format": "date-time" },
+        "dropped": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object", "required": ["id", "path", "media_type", "sha256", "size", "role", "created_at"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,64}$" },
+          "path": { "type": "string", "pattern": "^attachments/[^/\\\\:]+$" },
+          "media_type": { "type": "string", "minLength": 1, "maxLength": 127 },
+          "sha256": { "$ref": "#/$defs/sha256" },
+          "size": { "type": "integer", "minimum": 0 },
+          "role": { "type": "string", "description": "screenshot | recording | log | dump | other (unknown roles are allowed)" },
+          "title": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "width": { "type": "integer", "minimum": 0 }, "height": { "type": "integer", "minimum": 0 },
+          "duration_ms": { "type": "integer", "minimum": 0 },
+          "annotated": { "type": "boolean" }
+        }
+      }
+    },
+    "redaction": {
+      "type": "object", "required": ["policy", "verified"],
+      "properties": {
+        "policy": { "type": "string" },
+        "rules": { "type": "array", "items": { "type": "object", "required": ["id", "matches"], "properties": { "id": { "type": "string" }, "description": { "type": "string" }, "matches": { "type": "integer", "minimum": 0 } } } },
+        "manual": { "type": "integer", "minimum": 0 },
+        "verified": { "type": "boolean" },
+        "verified_at": { "type": "string", "format": "date-time" },
+        "reviewed_attachments": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "content_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "extensions": {
+      "type": "object",
+      "propertyNames": { "pattern": "^x-[a-z0-9-]+\\.[a-z0-9_.-]+$" }
+    }
+  },
+  "$defs": { "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" } }
+}
