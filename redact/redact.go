@@ -30,6 +30,13 @@ type Rule struct {
 	Validate func(string) bool `json:"-"`
 	// Replacement defaults to "[REDACTED:<id>]".
 	Replacement string `json:"replacement,omitempty"`
+	// Hints are literals, at least one of which must occur (compared
+	// case-insensitively when FoldHints is set) for the pattern to run.
+	// They are a fast prefilter and never change what matches.
+	Hints     []string `json:"hints,omitempty"`
+	FoldHints bool     `json:"fold_hints,omitempty"`
+	// Pre is an optional programmatic prefilter (built-in rules only).
+	Pre func(string) bool `json:"-"`
 
 	re *regexp.Regexp
 	vi int
@@ -79,6 +86,11 @@ func (p *Policy) Compile() error {
 		for i, k := range r.Keys {
 			r.Keys[i] = strings.ToLower(k)
 		}
+		if r.FoldHints {
+			for i, h := range r.Hints {
+				r.Hints[i] = strings.ToLower(h)
+			}
+		}
 	}
 	return nil
 }
@@ -98,10 +110,10 @@ func LoadPolicy(path string) (*Policy, error) {
 		return nil, err
 	}
 	var raw struct {
-		Name    string  `json:"name"`
-		Extends string  `json:"extends"`
+		Name    string   `json:"name"`
+		Extends string   `json:"extends"`
 		Disable []string `json:"disable"`
-		Rules   []*Rule `json:"rules"`
+		Rules   []*Rule  `json:"rules"`
 	}
 	dec := json.NewDecoder(strings.NewReader(string(b)))
 	dec.DisallowUnknownFields()
@@ -134,9 +146,32 @@ func LoadPolicy(path string) (*Policy, error) {
 // matches collapsed to the earliest rule.
 func (p *Policy) Scan(field, text string) []Finding {
 	var out []Finding
+	var lower string
 	for _, r := range p.Rules {
 		if r.re == nil {
 			continue
+		}
+		if r.Pre != nil && !r.Pre(text) {
+			continue
+		}
+		if len(r.Hints) > 0 {
+			hay := text
+			if r.FoldHints {
+				if lower == "" {
+					lower = strings.ToLower(text)
+				}
+				hay = lower
+			}
+			hit := false
+			for _, h := range r.Hints {
+				if strings.Contains(hay, h) {
+					hit = true
+					break
+				}
+			}
+			if !hit {
+				continue
+			}
 		}
 		for _, m := range r.re.FindAllStringSubmatchIndex(text, -1) {
 			s, e := m[0], m[1]

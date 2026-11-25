@@ -9,37 +9,37 @@ import "strings"
 // paths that reveal account names.
 func Default() *Policy {
 	p := &Policy{Name: "default", Rules: []*Rule{
-		{ID: "private-key", Description: "PEM private key blocks",
+		{ID: "private-key", Hints: []string{"PRIVATE KEY"}, Description: "PEM private key blocks",
 			Pattern: `-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----`},
-		{ID: "jwt", Description: "JSON Web Tokens",
+		{ID: "jwt", Hints: []string{"eyJ"}, Description: "JSON Web Tokens",
 			Pattern: `\beyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b`},
-		{ID: "bearer", Description: "Authorization bearer/basic credentials",
+		{ID: "bearer", Hints: []string{"bearer", "basic", "token"}, FoldHints: true, Description: "Authorization bearer/basic credentials",
 			Pattern: `(?i)\b(?:bearer|basic|token)\s+(?P<v>[A-Za-z0-9._~+/=-]{12,})`},
-		{ID: "url-credentials", Description: "user:password@ in URLs",
+		{ID: "url-credentials", Hints: []string{"://"}, Description: "user:password@ in URLs",
 			Pattern: `\b[a-zA-Z][a-zA-Z0-9+.-]*://[^\s/:@]+:(?P<v>[^\s/@]+)@`},
-		{ID: "query-secret", Description: "secret-looking URL query parameters",
+		{ID: "query-secret", Hints: []string{"?", "&"}, Description: "secret-looking URL query parameters",
 			Pattern: `(?i)[?&](?:access_token|api_key|apikey|token|secret|password|sig|signature|code|key)=(?P<v>[^&\s#"']{4,})`},
-		{ID: "aws-access-key", Description: "AWS access key IDs",
+		{ID: "aws-access-key", Hints: []string{"AKIA", "ASIA"}, Description: "AWS access key IDs",
 			Pattern: `\b(?:AKIA|ASIA)[0-9A-Z]{16}\b`},
-		{ID: "github-token", Description: "GitHub tokens",
+		{ID: "github-token", Hints: []string{"gh", "github_pat_"}, Description: "GitHub tokens",
 			Pattern: `\b(?:gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{40,})\b`},
-		{ID: "slack-token", Description: "Slack tokens",
+		{ID: "slack-token", Hints: []string{"xox"}, Description: "Slack tokens",
 			Pattern: `\bxox[abposr]-[A-Za-z0-9-]{10,}\b`},
-		{ID: "google-api-key", Description: "Google API keys",
+		{ID: "google-api-key", Hints: []string{"AIza"}, Description: "Google API keys",
 			Pattern: `\bAIza[0-9A-Za-z_-]{35}\b`},
-		{ID: "stripe-key", Description: "Stripe secret and restricted keys",
+		{ID: "stripe-key", Hints: []string{"_live_", "_test_"}, Description: "Stripe secret and restricted keys",
 			Pattern: `\b(?:sk|rk)_(?:live|test)_[0-9A-Za-z]{16,}\b`},
-		{ID: "llm-api-key", Description: "AI provider API keys",
+		{ID: "llm-api-key", Hints: []string{"sk-"}, Description: "AI provider API keys",
 			Pattern: `\bsk-(?:ant-|proj-)?[A-Za-z0-9_-]{20,}\b`},
-		{ID: "assignment-secret", Description: "password=..., secret: ... style assignments",
-			Pattern: `(?i)\b(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?key|client[_-]?secret|auth[_-]?token)\b["']?\s*[:=]\s*["']?(?P<v>[^\s"',;}{]{4,})`},
-		{ID: "email", Description: "email addresses",
+		{ID: "assignment-secret", Hints: []string{"pass", "pwd", "secret", "token", "key"}, FoldHints: true, Description: "password=..., secret: ... style assignments",
+			Pattern: `(?i)\b(?:password|passwd|pwd|secret|token|api[_-]?key|access[_-]?key|client[_-]?secret|auth[_-]?token)\b["']?\s*[:=]\s*["']?(?P<v>[^\s"',;}{]{4,})`},
+		{ID: "email", Hints: []string{"@"}, Description: "email addresses",
 			Pattern: `\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b`},
-		{ID: "card-number", Description: "payment card numbers (Luhn-checked)",
+		{ID: "card-number", Pre: minDigits(13), Description: "payment card numbers (Luhn-checked)",
 			Pattern: `\b(?:\d[ -]?){12,18}\d\b`, Validate: luhn},
-		{ID: "home-path", Description: "account names in home directory paths",
+		{ID: "home-path", Hints: []string{"/Users/", "/home/", "\\Users\\", ":/Users/"}, Description: "account names in home directory paths",
 			Pattern: `(?:/Users/|/home/|C:\\Users\\|C:/Users/)(?P<v>[^/\\\s"':\[][^/\\\s"':]*)`, Replacement: "[user]"},
-		{ID: "ipv4", Description: "IPv4 addresses (not loopback or private)",
+		{ID: "ipv4", Pre: minDots(3), Description: "IPv4 addresses (not loopback or private)",
 			Pattern: `\b(?:\d{1,3}\.){3}\d{1,3}\b`, Validate: publicIPv4},
 		{ID: "sensitive-key", Description: "attribute values whose key names a secret",
 			Keys: []string{"password", "passwd", "secret", "token", "authorization", "cookie", "api_key", "apikey", "private_key", "session", "credential"}},
@@ -97,4 +97,22 @@ func publicIPv4(s string) bool {
 		return false
 	}
 	return true
+}
+
+func minDigits(n int) func(string) bool {
+	return func(s string) bool {
+		c := 0
+		for i := 0; i < len(s); i++ {
+			if s[i] >= '0' && s[i] <= '9' {
+				if c++; c >= n {
+					return true
+				}
+			}
+		}
+		return false
+	}
+}
+
+func minDots(n int) func(string) bool {
+	return func(s string) bool { return strings.Count(s, ".") >= n }
 }

@@ -130,14 +130,14 @@ func TestMaliciousArchives(t *testing.T) {
 		b    []byte
 		want string
 	}{
-		"zip slip":         {addEntry(t, base, "../../etc/passwd", []byte("x")), "'..' segment"},
-		"absolute":         {addEntry(t, base, "/tmp/x", []byte("x")), "absolute"},
-		"backslash":        {addEntry(t, base, `attachments\..\x`, []byte("x")), "forbidden character"},
-		"nested dir":       {addEntry(t, base, "attachments/a/b.png", []byte("x")), "outside the allowed layout"},
-		"unlisted entry":   {addEntry(t, base, "attachments/extra.png", []byte("x")), "not listed"},
-		"duplicate":        {addEntry(t, base, "events.jsonl", []byte("x")), "duplicate"},
-		"control char":     {addEntry(t, base, "attachments/a\x01.png", []byte("x")), "control character"},
-		"script entry":     {addEntry(t, base, "run.sh", []byte("rm -rf /")), "outside the allowed layout"},
+		"zip slip":       {addEntry(t, base, "../../etc/passwd", []byte("x")), "'..' segment"},
+		"absolute":       {addEntry(t, base, "/tmp/x", []byte("x")), "absolute"},
+		"backslash":      {addEntry(t, base, `attachments\..\x`, []byte("x")), "forbidden character"},
+		"nested dir":     {addEntry(t, base, "attachments/a/b.png", []byte("x")), "outside the allowed layout"},
+		"unlisted entry": {addEntry(t, base, "attachments/extra.png", []byte("x")), "not listed"},
+		"duplicate":      {addEntry(t, base, "events.jsonl", []byte("x")), "duplicate"},
+		"control char":   {addEntry(t, base, "attachments/a\x01.png", []byte("x")), "control character"},
+		"script entry":   {addEntry(t, base, "run.sh", []byte("rm -rf /")), "outside the allowed layout"},
 		"tampered events": {rebuild(t, base, func(n string, d []byte) (string, []byte, bool) {
 			if n == EventsPath {
 				d = bytes.Replace(d, []byte("boom"), []byte("bang"), 1)
