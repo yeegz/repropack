@@ -1,0 +1,8 @@
+/bin/
+/dist/
+*.test
+*.out
+.DS_Store
+desktop/build/bin/
+desktop/frontend/node_modules/
+desktop/frontend/dist/
