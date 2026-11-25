@@ -1,0 +1,2 @@
+# 2026-11-25T06:21:38Z go version go1.27.4 darwin/arm64 fuzztime=90s
+== format FuzzReader

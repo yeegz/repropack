@@ -1,0 +1,71 @@
+# 2026-11-25T06:17:42Z go version go1.27.4 darwin/arm64 Darwin arm64
+Apple M1 Pro
+goos: darwin
+goarch: arm64
+pkg: github.com/yeegz/repropack/format
+cpu: Apple M1 Pro
+BenchmarkWrite10kEvents-8           	      57	  27589679 ns/op	 6872420 B/op	  140099 allocs/op
+BenchmarkWrite10kEvents-8           	      57	  18202626 ns/op	 6871878 B/op	  140098 allocs/op
+BenchmarkWrite10kEvents-8           	      68	  17536221 ns/op	 6900765 B/op	  140099 allocs/op
+BenchmarkOpenVerify10kEvents2MB-8   	      63	  19569157 ns/op	 110.18 MB/s	 6023082 B/op	  110156 allocs/op
+BenchmarkOpenVerify10kEvents2MB-8   	      60	  19016808 ns/op	 113.38 MB/s	 6021597 B/op	  110156 allocs/op
+BenchmarkOpenVerify10kEvents2MB-8   	      62	  18585778 ns/op	 116.01 MB/s	 6022307 B/op	  110153 allocs/op
+BenchmarkReadEvents10k-8            	      66	  18200778 ns/op	 7616737 B/op	  110110 allocs/op
+BenchmarkReadEvents10k-8            	      66	  17858399 ns/op	 7618807 B/op	  110110 allocs/op
+BenchmarkReadEvents10k-8            	      66	  19925068 ns/op	 7618000 B/op	  110108 allocs/op
+BenchmarkRejectZipSlip-8            	  450819	      2597 ns/op	    6982 B/op	      31 allocs/op
+BenchmarkRejectZipSlip-8            	  560593	      2749 ns/op	    6981 B/op	      31 allocs/op
+BenchmarkRejectZipSlip-8            	  530835	      2395 ns/op	    6981 B/op	      31 allocs/op
+PASS
+ok  	github.com/yeegz/repropack/format	16.410s
+goos: darwin
+goarch: arm64
+pkg: github.com/yeegz/repropack/redact
+cpu: Apple M1 Pro
+BenchmarkScan1KB-8   	   10000	    108070 ns/op	   9.62 MB/s	   10673 B/op	      77 allocs/op
+BenchmarkScan1KB-8   	   10000	    109967 ns/op	   9.46 MB/s	   10658 B/op	      77 allocs/op
+BenchmarkScan1KB-8   	   10000	    105714 ns/op	   9.84 MB/s	   10676 B/op	      77 allocs/op
+PASS
+ok  	github.com/yeegz/repropack/redact	3.626s
+goos: darwin
+goarch: arm64
+pkg: github.com/yeegz/repropack/sdk
+cpu: Apple M1 Pro
+BenchmarkLogNoAttrs-8              	 1779781	       712.5 ns/op	     208 B/op	       4 allocs/op
+BenchmarkLogNoAttrs-8              	 1691307	       719.1 ns/op	     208 B/op	       4 allocs/op
+BenchmarkLogNoAttrs-8              	 1772100	       714.1 ns/op	     208 B/op	       4 allocs/op
+BenchmarkLogNoAttrsNoRedaction-8   	 9618418	       145.1 ns/op	     160 B/op	       1 allocs/op
+BenchmarkLogNoAttrsNoRedaction-8   	 8893724	       126.8 ns/op	     160 B/op	       1 allocs/op
+BenchmarkLogNoAttrsNoRedaction-8   	 9652298	       129.3 ns/op	     160 B/op	       1 allocs/op
+BenchmarkLog4Attrs-8               	  602786	      1966 ns/op	    1025 B/op	      15 allocs/op
+BenchmarkLog4Attrs-8               	  587444	      2034 ns/op	    1025 B/op	      15 allocs/op
+BenchmarkLog4Attrs-8               	  618789	      2018 ns/op	    1025 B/op	      15 allocs/op
+BenchmarkLogFilteredByLevel-8      	166557324	         7.126 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLogFilteredByLevel-8      	166492581	         7.116 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLogFilteredByLevel-8      	168133838	         7.149 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLogParallel-8             	 2399920	       505.1 ns/op	     208 B/op	       4 allocs/op
+BenchmarkLogParallel-8             	 2240390	       512.5 ns/op	     208 B/op	       4 allocs/op
+BenchmarkLogParallel-8             	 2404279	       464.1 ns/op	     208 B/op	       4 allocs/op
+BenchmarkSlogBaseline-8            	 2297894	       516.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSlogBaseline-8            	 2294938	       517.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSlogBaseline-8            	 2291337	       524.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSlogTee-8                 	  523728	      2199 ns/op	     978 B/op	      13 allocs/op
+BenchmarkSlogTee-8                 	  570006	      2247 ns/op	     978 B/op	      13 allocs/op
+BenchmarkSlogTee-8                 	  534778	      2237 ns/op	     978 B/op	      13 allocs/op
+BenchmarkWriteReport2000Events-8   	     360	   3252126 ns/op	 1112627 B/op	   20082 allocs/op
+BenchmarkWriteReport2000Events-8   	     408	   2836982 ns/op	 1322904 B/op	   20085 allocs/op
+BenchmarkWriteReport2000Events-8   	     393	   2824661 ns/op	 1112631 B/op	   20082 allocs/op
+PASS
+ok  	github.com/yeegz/repropack/sdk	38.041s
+goos: darwin
+goarch: arm64
+pkg: github.com/yeegz/repropack/viewer
+cpu: Apple M1 Pro
+BenchmarkSummarize50k-8   	       8	 129884078 ns/op	89639725 B/op	  650725 allocs/op
+BenchmarkSummarize50k-8   	       8	 128402250 ns/op	89636768 B/op	  650719 allocs/op
+BenchmarkSummarize50k-8   	       8	 129184396 ns/op	89639823 B/op	  650725 allocs/op
+BenchmarkWriteHTML50k-8   	       6	 178474486 ns/op	87458618 B/op	 1353418 allocs/op
+BenchmarkWriteHTML50k-8   	       6	 182012007 ns/op	87461278 B/op	 1353421 allocs/op
+BenchmarkWriteHTML50k-8   	       6	 177147562 ns/op	87464285 B/op	 1353426 allocs/op
+PASS
+ok  	github.com/yeegz/repropack/viewer	8.317s

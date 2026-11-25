@@ -1,0 +1,10 @@
+ReproPack
+Copyright 2026 Yousof Selim and ReproPack contributors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+The ReproPack format specification (spec/) is additionally available under
+Creative Commons Attribution 4.0 International (CC BY 4.0) so that anyone can
+implement it, in any language, without adopting this codebase.
+
+Bundled fonts in the desktop app: Schibsted Grotesk and IBM Plex Mono, both
+under the SIL Open Font License 1.1 (via @fontsource packages).

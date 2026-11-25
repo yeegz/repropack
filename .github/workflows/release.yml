@@ -1,0 +1,35 @@
+# Builds release artifacts when a version tag is pushed. Artifacts are attached
+# to the workflow run only; publishing a GitHub release is a manual step.
+name: release-artifacts
+on:
+  push: { tags: ['v*'] }
+permissions: { contents: read }
+jobs:
+  cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.24.x' }
+      - run: |
+          for t in darwin/arm64 darwin/amd64 linux/amd64 linux/arm64 windows/amd64; do
+            GOOS=${t%/*} GOARCH=${t#*/} CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_REF_NAME}" \
+              -o dist/repropack-${GITHUB_REF_NAME}-${t%/*}-${t#*/}$([ ${t%/*} = windows ] && echo .exe) ./cmd/repropack
+          done
+          (cd dist && sha256sum * > SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with: { name: repropack-cli, path: dist/ }
+  desktop-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.26.x' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.17.1
+      - run: wails build -platform darwin/universal -trimpath
+        working-directory: desktop
+      - run: cd desktop/build/bin && ditto -c -k --keepParent ReproPack.app ReproPack-macos.zip && shasum -a 256 ReproPack-macos.zip > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with: { name: repropack-desktop-macos, path: "desktop/build/bin/*.zip\ndesktop/build/bin/SHA256SUMS" }

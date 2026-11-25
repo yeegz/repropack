@@ -1,0 +1,42 @@
+name: ci
+on:
+  push: { branches: [main] }
+  pull_request:
+permissions: { contents: read }
+jobs:
+  core:
+    strategy:
+      matrix: { os: [ubuntu-latest, macos-latest, windows-latest] }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.24.x' }
+      - run: go vet ./...
+      - run: gofmt -l . | tee /dev/stderr | (! read)
+        if: runner.os != 'Windows'
+      - run: go test -race ./...
+      - name: Fuzz smoke (30s each)
+        if: runner.os == 'Linux'
+        run: |
+          go test ./format -run '^$' -fuzz '^FuzzReader$' -fuzztime 30s
+          go test ./format -run '^$' -fuzz '^FuzzEventLine$' -fuzztime 30s
+          go test ./redact -run '^$' -fuzz '^FuzzRedactString$' -fuzztime 30s
+          go test ./otlp -run '^$' -fuzz '^FuzzImport$' -fuzztime 30s
+      - name: Conformance examples
+        run: go run ./cmd/repropack validate spec/examples/checkout-crash.repropack
+      - name: Benchmarks (smoke)
+        if: runner.os == 'Linux'
+        run: go test ./format ./sdk -run '^$' -bench . -benchtime 100ms
+  desktop:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.26.x' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm, cache-dependency-path: desktop/frontend/package-lock.json }
+      - run: npm ci && npm run check && npm test && npm run build
+        working-directory: desktop/frontend
+      - run: go vet . && go test -race .
+        working-directory: desktop
