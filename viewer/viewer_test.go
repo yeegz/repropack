@@ -76,7 +76,7 @@ func TestCSPHashMatchesScript(t *testing.T) {
 	if !strings.Contains(stdhtml.UnescapeString(html), want) {
 		t.Fatalf("CSP does not allow the inline script (want %s)", want)
 	}
-	if !strings.Contains(html, "default-src 'none'") {
+	if !strings.Contains(stdhtml.UnescapeString(html), "default-src 'none'") {
 		t.Fatal("CSP missing default-src none")
 	}
 }
