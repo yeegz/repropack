@@ -1,0 +1,146 @@
+@import "@fontsource-variable/schibsted-grotesk";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+:root {
+  /* Paper and ink */
+  --paper: #F5F6F4;
+  --surface: #FFFFFF;
+  --sunk: #ECEEEA;
+  --raised: #FFFFFF;
+  --ink: #1A1C1F;
+  --ink-2: #4A4E55;
+  --ink-3: #767A82;
+  --rule: #E1E3DF;
+  --rule-2: #CDD0CB;
+  --sidebar: #EDEFEC;
+  /* Seal: integrity and primary actions */
+  --seal: #0B7A66;
+  --seal-hover: #096A58;
+  --seal-ink: #FFFFFF;
+  --seal-soft: #DCEFEA;
+  /* Semantics */
+  --err: #C83A2E;
+  --err-soft: #FBE5E2;
+  --crash: #9A2155;
+  --crash-soft: #F7E1EA;
+  --warn: #C2620A;
+  --warn-soft: #FCEBDC;
+  --info: #4A4E55;
+  --span: #5B4BD6;
+  --rec: #E0352B;
+  --focus: #0B7A66;
+  --shadow-pop: 0 18px 48px -12px rgba(18, 22, 20, 0.28), 0 2px 6px rgba(18, 22, 20, 0.08);
+  --shadow-lift: 0 1px 2px rgba(18, 22, 20, 0.06), 0 4px 14px -6px rgba(18, 22, 20, 0.12);
+
+  --font: "Schibsted Grotesk Variable", "Schibsted Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --r-xs: 6px;
+  --r-sm: 9px;
+  --r-md: 13px;
+  --r-lg: 18px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --t-fast: 120ms;
+  --t-med: 220ms;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --paper: #0B0C0F;
+  --surface: #14161A;
+  --sunk: #0F1114;
+  --raised: #1A1D22;
+  --ink: #ECEDEA;
+  --ink-2: #B9BCB7;
+  --ink-3: #8A8E89;
+  --rule: #23262C;
+  --rule-2: #31353C;
+  --sidebar: #0F1013;
+  --seal: #3CCBAA;
+  --seal-hover: #5ED8BB;
+  --seal-ink: #04231C;
+  --seal-soft: #10302A;
+  --err: #FF7D70;
+  --err-soft: #331816;
+  --crash: #F47BB0;
+  --crash-soft: #331827;
+  --warn: #F59E4C;
+  --warn-soft: #30210F;
+  --info: #B9BCB7;
+  --span: #A89CFF;
+  --rec: #FF5B4F;
+  --focus: #3CCBAA;
+  --shadow-pop: 0 18px 48px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-lift: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 6px 18px -8px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+:root[data-contrast="more"] {
+  --ink-2: var(--ink);
+  --ink-3: var(--ink-2);
+  --rule: var(--ink-3);
+  --rule-2: var(--ink-2);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 14px/1.5 var(--font);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01";
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+input, textarea, [contenteditable], .selectable { user-select: text; -webkit-user-select: text; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: default; }
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--r-xs); }
+.mono { font-family: var(--mono); font-size: 0.9em; font-variant-ligatures: none; }
+.muted { color: var(--ink-3); }
+.vh { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+h1, h2, h3, h4 { margin: 0; font-weight: 650; letter-spacing: -0.012em; }
+p { margin: 0; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 34px; padding: 0 14px; border-radius: var(--r-sm);
+  border: 1px solid var(--rule-2); background: var(--surface); color: var(--ink);
+  font-weight: 600; font-size: 13.5px; white-space: nowrap;
+  transition: background var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
+}
+.btn:hover { background: var(--sunk); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.45; pointer-events: none; }
+.btn.primary { background: var(--seal); border-color: var(--seal); color: var(--seal-ink); }
+.btn.primary:hover { background: var(--seal-hover); }
+.btn.danger { color: var(--err); }
+.btn.quiet { border-color: transparent; background: transparent; }
+.btn.quiet:hover { background: var(--sunk); }
+.btn.big { height: 42px; padding: 0 18px; font-size: 14.5px; border-radius: var(--r-md); }
+.btn.icon { width: 34px; padding: 0; }
+
+.field { display: grid; gap: 6px; }
+.field > span { font-weight: 600; font-size: 13px; color: var(--ink-2); }
+.field small { color: var(--ink-3); font-size: 12.5px; }
+.input, .textarea {
+  width: 100%; border: 1px solid var(--rule-2); background: var(--surface); border-radius: var(--r-sm);
+  padding: 8px 11px; font-size: 14px; transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.textarea { resize: vertical; min-height: 78px; line-height: 1.5; }
+.input:focus, .textarea:focus { border-color: var(--seal); box-shadow: 0 0 0 3px var(--seal-soft); }
+
+.scroll { overflow: auto; scrollbar-width: thin; scrollbar-color: var(--rule-2) transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; animation-iteration-count: 1 !important; }
+}
+@media (forced-colors: active) {
+  .btn, .input, .textarea { border: 1px solid ButtonText; }
+  .btn.primary { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+}

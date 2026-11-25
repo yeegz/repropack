@@ -1,4 +1,9 @@
-package main
+// Package ingest parses existing log files into ReproPack events, so reports
+// can include logs from applications that do not use the SDK. It recognises
+// JSON lines (slog, zap, zerolog, bunyan style), logfmt, and
+// "<timestamp> <LEVEL> message" text, and folds stack-trace continuation
+// lines into the preceding event.
+package ingest
 
 import (
 	"bufio"
@@ -9,11 +14,13 @@ import (
 	"strings"
 	"time"
 
+	"io"
+
 	"github.com/yeegz/repropack/format"
-	"github.com/yeegz/repropack/sdk"
 )
 
-const maxIngestLine = 1 << 20
+// MaxLine bounds a single log line.
+const MaxLine = 1 << 20
 
 var (
 	tsPrefix = regexp.MustCompile(`^\[?(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:[.,]\d{1,9})?(?:Z|[+-]\d{2}:?\d{2})?)\]?\s*`)
@@ -21,28 +28,49 @@ var (
 	logfmtKV = regexp.MustCompile(`(?:^|\s)(time|ts|level|lvl|msg)=("(?:[^"\\]|\\.)*"|\S+)`)
 )
 
-// ingestLog parses a plain-text log: JSON lines (slog/zap/zerolog style),
-// logfmt, or "<timestamp> <LEVEL> message" lines. Unparseable lines become
-// continuation text of the previous event (stack traces) or plain events.
-func ingestLog(rec *sdk.Recorder, path string) error {
+// File parses the log at path. When tail > 0 only the last tail bytes are
+// read (the first, partial line is skipped). fn receives events in file order.
+func File(path string, tail int64, fn func(format.Event)) error {
 	f, err := os.Open(path)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	st, _ := f.Stat()
-	fallback := st.ModTime()
-	sc := bufio.NewScanner(f)
-	sc.Buffer(make([]byte, 64<<10), maxIngestLine)
+	st, err := f.Stat()
+	if err != nil {
+		return err
+	}
+	if !st.Mode().IsRegular() {
+		return fmt.Errorf("%s is not a regular file", path)
+	}
+	var r io.Reader = f
+	skipFirst := false
+	if tail > 0 && st.Size() > tail {
+		if _, err := f.Seek(st.Size()-tail, io.SeekStart); err != nil {
+			return err
+		}
+		skipFirst = true
+	}
+	return Reader(r, pathBase(path), st.ModTime(), skipFirst, fn)
+}
+
+// Reader parses log text from r. source names the log; fallback is used for
+// lines without a timestamp.
+func Reader(r io.Reader, source string, fallback time.Time, skipFirst bool, fn func(format.Event)) error {
+	sc := bufio.NewScanner(r)
+	sc.Buffer(make([]byte, 64<<10), MaxLine)
 	var pending *format.Event
 	flush := func() {
 		if pending != nil {
-			rec.Record(*pending)
+			fn(*pending)
 			pending = nil
 		}
 	}
-	source := pathBase(path)
 	for sc.Scan() {
+		if skipFirst {
+			skipFirst = false
+			continue
+		}
 		line := strings.TrimRight(sc.Text(), "\r")
 		if strings.TrimSpace(line) == "" {
 			continue
@@ -82,7 +110,7 @@ func ingestLog(rec *sdk.Recorder, path string) error {
 	}
 	flush()
 	if err := sc.Err(); err != nil {
-		return fmt.Errorf("%s: %w", path, err)
+		return fmt.Errorf("%s: %w", source, err)
 	}
 	return nil
 }
@@ -194,16 +222,16 @@ func normLevel(s string) string {
 	return ""
 }
 
-// ingestJSONL reads ReproPack-shaped events (as produced by 'inspect
-// --events --json'), re-sequencing them.
-func ingestJSONL(rec *sdk.Recorder, path string) error {
+// JSONL reads ReproPack-shaped events (as produced by 'repropack inspect
+// --events --json'). Seq is cleared so the caller can re-sequence.
+func JSONL(path string, fn func(format.Event)) error {
 	f, err := os.Open(path)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 	sc := bufio.NewScanner(f)
-	sc.Buffer(make([]byte, 64<<10), maxIngestLine)
+	sc.Buffer(make([]byte, 64<<10), MaxLine)
 	n := 0
 	for sc.Scan() {
 		n++
@@ -218,7 +246,7 @@ func ingestJSONL(rec *sdk.Recorder, path string) error {
 		if e.Time.IsZero() {
 			return fmt.Errorf("%s:%d: event has no ts", path, n)
 		}
-		rec.Record(e)
+		fn(e)
 	}
 	return sc.Err()
 }

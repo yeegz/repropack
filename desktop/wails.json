@@ -1,0 +1,17 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "ReproPack",
+  "outputfilename": "ReproPack",
+  "frontend:install": "npm ci",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": { "name": "Yousof Selim" },
+  "info": {
+    "companyName": "ReproPack",
+    "productName": "ReproPack",
+    "productVersion": "0.1.0",
+    "copyright": "Apache-2.0",
+    "comments": "Portable, local-first bug reports"
+  }
+}

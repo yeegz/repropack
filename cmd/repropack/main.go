@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/yeegz/repropack/format"
+	"github.com/yeegz/repropack/ingest"
 	"github.com/yeegz/repropack/otlp"
 	"github.com/yeegz/repropack/redact"
 	"github.com/yeegz/repropack/sdk"
@@ -547,12 +548,12 @@ func cmdCreate(args []string) error {
 	}
 	rec := sdk.New(opt)
 	for _, p := range logs {
-		if err := ingestLog(rec, p); err != nil {
+		if err := ingest.File(p, 0, rec.Record); err != nil {
 			return err
 		}
 	}
 	for _, p := range jsonl {
-		if err := ingestJSONL(rec, p); err != nil {
+		if err := ingest.JSONL(p, rec.Record); err != nil {
 			return err
 		}
 	}
