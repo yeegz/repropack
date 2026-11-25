@@ -1,5 +1,5 @@
 :root{
-  --paper:#F5F6F4;--surface:#FFFFFF;--sunk:#ECEEEA;--ink:#1A1C1F;--ink-2:#4A4E55;--ink-3:#767A82;--rule:#E1E3DF;--rule-2:#CDD0CB;
+  --paper:#F5F6F8;--surface:#FFFFFF;--sunk:#ECEEEA;--ink:#1A1C1F;--ink-2:#4A4E55;--ink-3:#626870;--rule:#E1E3DF;--rule-2:#CDD0CB;
   --accent:#0B7A66;--accent-ink:#FFFFFF;--accent-soft:#DCEFEA;
   --err:#C83A2E;--err-soft:#FBE5E2;--crash:#9A2155;--crash-soft:#F7E1EA;--warn:#B35A08;--warn-soft:#FCEBDC;--debug:#8A8D94;
   --lane-log:#5B5F68;--lane-action:#0C7A64;--lane-span:#6A5ACD;
@@ -32,17 +32,18 @@ section{margin:44px 0}
 .bar{border-bottom:1px solid var(--rule);background:color-mix(in oklab,var(--paper) 86%,transparent);position:sticky;top:0;z-index:5;backdrop-filter:saturate(1.4) blur(10px)}
 .bar-in{display:flex;align-items:center;gap:10px;height:52px}
 .mark{color:var(--accent);display:inline-flex}.word{font-weight:700;letter-spacing:-.01em}.sep{color:var(--rule-2)}.crumb{color:var(--ink-3)}
-.chip{margin-left:auto;font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px}
-.chip.ok{background:var(--accent-soft);color:var(--accent)}.chip.bad{background:var(--err-soft);color:var(--err)}
+.status{margin-left:auto;font-size:12.5px;font-weight:600;text-align:right}
+.status.ok{color:var(--accent)}.status.bad{color:var(--err)}
+@media (max-width:480px){.bar .sep,.crumb{display:none}}
 .banner{margin-top:24px;padding:14px 16px;border-radius:var(--radius);display:grid;gap:4px}
 .banner.bad{background:var(--err-soft);color:var(--ink);border:1px solid color-mix(in oklab,var(--err) 40%,transparent)}
 .hero{margin-top:40px}
 .eyebrow{margin:0 0 6px;color:var(--ink-3);font-weight:600;font-size:13.5px}
 h1{font-size:clamp(26px,4.2vw,38px);line-height:1.12;letter-spacing:-.022em;max-width:22ch;text-wrap:balance}
-.headline{margin:16px 0 0;padding:10px 14px;border-radius:var(--radius-sm);font-size:16px;max-width:70ch;border-left:3px solid}
-.headline.error{background:var(--err-soft);border-color:var(--err)}
-.headline.crash{background:var(--crash-soft);border-color:var(--crash)}
-.headline.calm{background:var(--accent-soft);border-color:var(--accent)}
+.headline{margin:16px 0 0;padding:10px 14px;border-radius:var(--radius-sm);font-size:16px;max-width:70ch;border:1px solid var(--rule)}
+.headline.error{background:var(--err-soft);border-color:color-mix(in oklab,var(--err) 28%,var(--rule))}
+.headline.crash{background:var(--crash-soft);border-color:color-mix(in oklab,var(--crash) 28%,var(--rule))}
+.headline.calm{background:var(--accent-soft);border-color:color-mix(in oklab,var(--accent) 28%,var(--rule))}
 .meta{display:flex;flex-wrap:wrap;gap:8px 28px;margin:20px 0 0}
 .meta div{display:grid}.meta dt{font-size:12px;color:var(--ink-3);font-weight:600}.meta dd{margin:0;font-size:14px}
 .glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden;margin-top:28px}
@@ -108,11 +109,11 @@ details[open]>summary::before{transform:rotate(90deg) translateX(-1px)}
 .attrs dt,.attrs dd{font-family:var(--mono);font-size:12.5px}
 table.mini{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 10px}
 .mini th{text-align:left;color:var(--ink-3);font-weight:600;font-size:12px;padding:4px 0;border-bottom:1px solid var(--rule)}
-.mini td{padding:5px 8px 5px 0;border-bottom:1px solid var(--rule)}.mini .num{text-align:right;font-variant-numeric:tabular-nums}
+.mini td{padding:5px 8px 5px 0;border-bottom:1px solid var(--rule);overflow-wrap:anywhere}.mini .num{text-align:right;font-variant-numeric:tabular-nums}
 .warnline{background:var(--warn-soft);padding:8px 10px;border-radius:var(--radius-sm);font-size:13.5px}
 .empty{padding:28px;text-align:center;color:var(--ink-3);background:var(--surface);border:1px dashed var(--rule-2);border-radius:var(--radius)}
 .foot{border-top:1px solid var(--rule);padding-top:18px;padding-bottom:40px;color:var(--ink-3);font-size:13px}
 tr[hidden]{display:none}
-@media (forced-colors:active){.lvl,.chip,.headline,.stat{border:1px solid CanvasText}.lane rect,.pin rect{fill:CanvasText}.metric path{stroke:CanvasText}}
+@media (forced-colors:active){.lvl,.headline,.stat{border:1px solid CanvasText}.lane rect,.pin rect{fill:CanvasText}.metric path{stroke:CanvasText}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media print{.bar,.filters,.skip{display:none}.tablewrap{max-height:none;overflow:visible}details{open:true}body{background:#fff}}

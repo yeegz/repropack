@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import { api } from "../lib/api";
   import { app } from "../lib/state.svelte";
   import { keepFor } from "../lib/keep";
@@ -9,7 +9,7 @@
 
   let { id, detail, reload, onready }: { id: string; detail: DraftDetail; reload: () => Promise<void>; onready: (ok: boolean) => void } = $props();
   let review = $state<Review | null>(null);
-  let keep = $state(new Set(keepFor(id)));
+  let keep = $state(untrack(() => new Set(keepFor(id))));
 
   async function load() {
     try { review = await api.review(id); onready(review.unreviewed === 0); }

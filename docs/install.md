@@ -1,6 +1,6 @@
 # Installation
 
-Nothing is published yet, so build from source. Every command below runs offline after the first dependency download.
+Build from your local ReproPack checkout. The CLI and SDK need only the Go toolchain. The desktop app also needs the dependencies listed below. This pre-release has no package registry or public download.
 
 ## Requirements
 
@@ -11,34 +11,34 @@ Nothing is published yet, so build from source. Every command below runs offline
 
 ## CLI
 
-```bash
-git clone <repo> repropack && cd repropack
-```
+Run from the checkout root.
 
 ```bash
 go build -o bin/repropack ./cmd/repropack
-```
-
-```bash
 ./bin/repropack version
+./bin/repropack validate spec/examples/checkout-crash.repropack
 ```
 
-Or install it to your `GOPATH/bin`:
-
-```bash
-go install ./cmd/repropack
-```
+`go install ./cmd/repropack` installs into `GOBIN` or `GOPATH/bin`.
 
 ## SDK
 
+From your Go module, point to your local checkout. The placeholder version is resolved from that directory.
+
 ```bash
-go get github.com/yeegz/repropack/sdk
+go mod edit -replace github.com/yeegz/repropack=/path/to/repropack
+go get github.com/yeegz/repropack/sdk@v0.0.0
 ```
 
-Until the module is published, point at a local checkout:
+To try the SDK in a new module, set `REPROPACK_SOURCE` to the absolute path of the source checkout, then run the following commands in an empty directory.
 
 ```bash
-go mod edit -replace github.com/yeegz/repropack=../repropack
+go mod init example.com/repropack-app
+go mod edit -replace "github.com/yeegz/repropack=$REPROPACK_SOURCE"
+go get github.com/yeegz/repropack/sdk@v0.0.0
+cp "$REPROPACK_SOURCE/examples/basic/main.go" .
+go run .
+go run github.com/yeegz/repropack/cmd/repropack validate basic.repropack
 ```
 
 ## Desktop app (macOS)
@@ -63,7 +63,7 @@ For Intel Macs use `-platform darwin/amd64`; `darwin/universal` builds both. The
 
 ### Windows and Linux
 
-The app compiles and runs (`wails build -platform windows/amd64` or `linux/amd64`, which need that platform's WebView prerequisites). Built-in capture is macOS-only for now. Elsewhere you can add existing screenshots, recordings and logs, and use the viewer and every other feature.
+The CLI targets Windows and Linux as well as macOS. The desktop release packages are currently macOS only. The desktop capture backend uses the macOS system picker. Windows and Linux desktop builds need platform-specific WebView prerequisites and runtime verification.
 
 ## Verify a build
 

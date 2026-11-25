@@ -1,14 +1,16 @@
 <script lang="ts">
+  import { untrack } from "svelte";
   import type { Draft, DraftText } from "../lib/types";
   import Icon from "../components/Icon.svelte";
 
   let { draft, onchange }: { draft: Draft; onchange: (t: DraftText) => void } = $props();
-  let title = $state(draft.title);
-  let actual = $state(draft.actual);
-  let expected = $state(draft.expected);
-  let description = $state(draft.description);
-  let frequency = $state(draft.frequency);
-  let steps = $state<string[]>(draft.steps.length ? [...draft.steps] : [""]);
+  const initial = untrack(() => draft);
+  let title = $state(initial.title);
+  let actual = $state(initial.actual);
+  let expected = $state(initial.expected);
+  let description = $state(initial.description);
+  let frequency = $state(initial.frequency);
+  let steps = $state<string[]>(initial.steps.length ? [...initial.steps] : [""]);
   const freqs = ["Every time", "Sometimes", "Once"];
 
   function emit() {

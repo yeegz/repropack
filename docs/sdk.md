@@ -1,8 +1,6 @@
 # Go SDK guide
 
-```bash
-go get github.com/yeegz/repropack/sdk
-```
+The module is available from a source checkout. Follow the [installation steps](install.md#sdk) to add it to an existing Go module or run the standalone example.
 
 The SDK keeps a **bounded, redacted buffer** of recent diagnostics in memory and writes a `.repropack` report when you ask: from a "Report a problem" button, from an error path, or from a panic. It never sends anything anywhere, and it doesn't replace your logger, tracer or crash reporter.
 
@@ -96,16 +94,17 @@ rec := sdk.New(sdk.Options{Policy: p})
 
 ## 5. Overhead
 
-Measured on an Apple M-series laptop with Go 1.27 (full table in [BENCHMARKS.md](BENCHMARKS.md)):
+The median of three runs on an Apple M1 Pro with Go 1.27.4. [Benchmark method and raw results](BENCHMARKS.md)
 
 | | ns/op | allocs |
 |---|---|---|
-| Log line, redaction on | ~690 | 4 |
-| Log line, redaction off | ~130 | 1 |
-| Log line below `MinLevel` | ~10 | 0 |
-| 4-attribute log line, redaction on | ~2,400 | 15 |
-| slog tee, beyond the base handler | ~3,000 | 13 |
-| Write report, 2000 buffered events | ~5.9 ms | |
+| Log line, redaction on | 714.1 | 4 |
+| Log line, redaction off | 129.3 | 1 |
+| Log line below `MinLevel` | 7.126 | 0 |
+| 4-attribute log line, redaction on | 2,018 | 15 |
+| `slog` JSON handler without recorder | 517.7 | 0 |
+| `slog` JSON handler with recorder | 2,237 | 13 |
+| Write report, 2,000 buffered events | 2,836,982 | 20,082 |
 
 Memory is bounded by `MaxBytes`, an approximate accounting of the buffered events, plus Go's per-object overhead.
 

@@ -18,9 +18,9 @@
     <span class="sep" aria-hidden="true">/</span>
     <span class="crumb">Report summary</span>
     {{if .S.Verified}}
-    <span class="chip ok" title="Every file matches the SHA-256 recorded in the manifest">Integrity verified</span>
+    <span class="status ok" title="Every file matches the SHA-256 recorded in the manifest">File integrity checked</span>
     {{else}}
-    <span class="chip bad">Integrity check failed</span>
+    <span class="status bad">Integrity check failed</span>
     {{end}}
   </div>
 </header>

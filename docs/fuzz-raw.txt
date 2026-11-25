@@ -1,2 +1,21 @@
 # 2026-11-25T06:21:38Z go version go1.27.4 darwin/arm64 fuzztime=90s
 == format FuzzReader
+fuzz: elapsed: 1m30s, execs: 11001888 (112001/sec), new interesting: 19 (total: 29)
+fuzz: elapsed: 1m31s, execs: 11001888 (0/sec), new interesting: 19 (total: 29)
+PASS
+ok  	github.com/yeegz/repropack/format	91.484s
+== format FuzzEventLine
+fuzz: elapsed: 1m30s, execs: 1202437 (6460/sec), new interesting: 95 (total: 293)
+fuzz: elapsed: 1m31s, execs: 1202437 (0/sec), new interesting: 95 (total: 293)
+PASS
+ok  	github.com/yeegz/repropack/format	91.268s
+== redact FuzzRedactString
+fuzz: elapsed: 1m30s, execs: 1221396 (4784/sec), new interesting: 173 (total: 373)
+fuzz: elapsed: 1m31s, execs: 1221396 (0/sec), new interesting: 173 (total: 373)
+PASS
+ok  	github.com/yeegz/repropack/redact	91.456s
+== otlp FuzzImport
+fuzz: elapsed: 1m30s, execs: 2598910 (25574/sec), new interesting: 363 (total: 364)
+fuzz: elapsed: 1m31s, execs: 2598910 (0/sec), new interesting: 363 (total: 364)
+PASS
+ok  	github.com/yeegz/repropack/otlp	91.501s

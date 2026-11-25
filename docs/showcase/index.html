@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ReproPack collects bug evidence in one reviewable, portable file.">
+  <title>ReproPack · One file that explains a bug</title>
+  <link rel="stylesheet" href="showcase.css">
+</head>
+<body>
+  <header class="site-header wrap">
+    <a class="brand" href="#top"><img src="../../desktop/build/appicon.png" alt="" width="42" height="42">ReproPack</a>
+    <nav aria-label="Resources"><a href="../install.md">Install</a><a href="../../spec/SPEC.md">Format</a></nav>
+  </header>
+  <main id="top" class="wrap">
+    <section class="intro" aria-labelledby="title">
+      <h1 id="title">One file that explains a bug.</h1>
+      <p>Put the steps, screenshots and logs in a report you can review before it leaves your device.</p>
+      <a class="open" href="../../spec/examples/checkout-crash.html">Open the checkout report <span aria-hidden="true">→</span></a>
+    </section>
+    <figure class="sleeve">
+      <div class="specimen">
+        <picture>
+          <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="report-phone-dark.webp" width="390" height="900">
+          <source media="(max-width: 600px)" srcset="report-phone-light.webp" width="390" height="900">
+          <source media="(prefers-color-scheme: dark)" srcset="report-desktop-dark.webp">
+          <img src="report-desktop-light.webp" alt="The checkout report shows errors, a crash and reproduction steps for a declined payment." width="1280" height="900">
+        </picture>
+      </div>
+      <figcaption><strong>Checkout crashes after a declined card</strong><span>A bundled report with 14 events and 2 attachments</span></figcaption>
+    </figure>
+    <section class="workflow" aria-labelledby="ways">
+      <h2 id="ways">From a report to a fix</h2>
+      <dl>
+        <div><dt>Capture the problem</dt><dd>The macOS app collects reproduction steps and the evidence you choose. Review sensitive text and media before exporting.</dd></div>
+        <div><dt>See what happened</dt><dd>Open the report’s timeline, validate the recorded hashes, or make an HTML summary for someone without ReproPack.</dd></div>
+        <div><dt>Keep your existing logger</dt><dd>The Go recorder can keep a bounded buffer alongside <code>log/slog</code> and write a report when asked.</dd></div>
+      </dl>
+    </section>
+  </main>
+  <footer class="wrap site-footer"><span>Source pre-release 0.1.0</span><a href="../../README.md">Source and quick start</a></footer>
+</body>
+</html>

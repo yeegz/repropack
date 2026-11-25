@@ -11,7 +11,7 @@
   import EventDetail from "../components/EventDetail.svelte";
 
   let { token }: { token: string } = $props();
-  let view = $state<ReportView | null>(reports.get(token) ?? null);
+  const view = $derived<ReportView | null>(reports.get(token) ?? null);
   const s = $derived(view?.summary);
   const m = $derived(s?.manifest);
   type Tab = "overview" | "events" | "evidence" | "details";
@@ -216,7 +216,8 @@
                   <!-- svelte-ignore a11y_media_has_caption -->
                   <video src={url(a)} controls preload="metadata" aria-label={a.title}></video>
                 {:else if isText(a)}
-                  <pre class="txt selectable" tabindex="0" role="region" aria-label="{a.title} contents">{texts[a.id] || "Loading…"}</pre>
+                  <!-- svelte-ignore a11y_no_noninteractive_tabindex (Allow keyboard scrolling in the attachment preview.) -->
+                  <pre class="txt selectable" tabindex="0" role="group" aria-label="{a.title} contents">{texts[a.id] || "Loading…"}</pre>
                 {:else}
                   <p class="muted ph">{a.media_type} files are not displayed.</p>
                 {/if}

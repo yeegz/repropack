@@ -44,9 +44,10 @@
   });
 </script>
 
+<a class="skip" href="#main">Skip to main content</a>
 <div class="frame">
   <Sidebar onnew={newReport} onopen={openReport} />
-  <main class="main" id="main">
+  <main class="main" id="main" tabindex="-1">
     <div class="drag" style="--wails-draggable:drag" aria-hidden="true"></div>
     {#if app.recordingDraft}<RecordingBar />{/if}
     {#key app.route}
@@ -65,6 +66,8 @@
 <Toasts />
 
 <style>
+  .skip { position: fixed; inset: 12px auto auto 12px; z-index: 20; padding: 10px 14px; border-radius: 8px; background: var(--surface); color: var(--ink); transform: translateY(calc(-100% - 18px)); }
+  .skip:focus { transform: none; }
   .frame { display: grid; grid-template-columns: 264px 1fr; height: 100vh; }
   .main { position: relative; min-width: 0; height: 100vh; display: flex; flex-direction: column; background: var(--paper); }
   .drag { position: absolute; inset: 0 0 auto 0; height: 38px; z-index: 0; }

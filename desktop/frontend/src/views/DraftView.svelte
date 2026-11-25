@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import { api, on } from "../lib/api";
   import { app } from "../lib/state.svelte";
   import type { DraftDetail, DraftText } from "../lib/types";
@@ -10,7 +10,7 @@
   import StepShare from "./StepShare.svelte";
 
   let { id, initialStep = 0 }: { id: string; initialStep?: number } = $props();
-  let step = $state(initialStep);
+  let step = $state(untrack(() => initialStep));
   let detail = $state<DraftDetail | null>(null);
   let loadError = $state("");
   let saving = $state<"idle" | "saving" | "saved">("idle");

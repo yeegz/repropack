@@ -1,6 +1,8 @@
 # ReproPack
 
-**One file that explains a bug.** ReproPack captures what someone did, what they saw, and what the software was doing at the time, hides what's private, and saves it all as a single `.repropack` file anyone can open. No account, no server, no upload.
+**One file that explains a bug.** ReproPack packages reproduction steps, screenshots, logs and diagnostics into a `.repropack` file. Review private details before sharing it with a maintainer. Capture and inspection run locally, with no account or server.
+
+[Open the sample report](spec/examples/checkout-crash.html) · [View the local showcase](docs/showcase/index.html)
 
 It is four pieces you can adopt separately:
 
@@ -15,7 +17,7 @@ The core module (`format`, `redact`, `sdk`, `otlp`, `ingest`, `viewer`, CLI) use
 
 ## Why
 
-Bug reports usually arrive as a sentence, a cropped screenshot, or a link into someone's SaaS account. Crash SDKs need a server; self-hosting Sentry needs 16 GB of RAM and about 16 services. Shared diagnostic files leak secrets: Okta's 2023 breach went through customer-uploaded HAR files containing session tokens. And there's no standard, offline bundle a person can *inspect before sending*. ([Research notes](docs/research/PRIOR-ART.md).)
+Maintainers often have to ask for the steps, logs and screenshots needed to reproduce the same problem. Those files can also contain credentials or personal information. ReproPack brings the evidence and the privacy review into the same workflow. It can sit alongside an existing crash tracker or logging setup. [Research notes](docs/research/PRIOR-ART.md)
 
 ReproPack is that bundle:
 
@@ -29,31 +31,29 @@ ReproPack is that bundle:
 
 ### CLI
 
-```bash
-go install github.com/yeegz/repropack/cmd/repropack@latest   # once published; for now: go build -o bin/repropack ./cmd/repropack
-```
+From the source checkout, open the bundled checkout-failure report with Go 1.24 or later.
 
 ```bash
-repropack create -o crash.repropack --title "Checkout freezes" --log app.log --attach shot.png --step "Press Pay"
+go build -o bin/repropack ./cmd/repropack
+./bin/repropack validate spec/examples/checkout-crash.repropack
+./bin/repropack inspect spec/examples/checkout-crash.repropack
+./bin/repropack html spec/examples/checkout-crash.repropack -o checkout.html
 ```
 
-```bash
-repropack inspect crash.repropack
-```
+Open `checkout.html` in a browser to read the evidence timeline offline. Use local log and screenshot files to start your own report.
 
 ```bash
-repropack html crash.repropack          # self-contained, offline web page
+./bin/repropack create -o crash.repropack --title "Checkout freezes" --log app.log --attach shot.png --step "Press Pay"
+./bin/repropack scan crash.repropack
+./bin/repropack redact crash.repropack -o clean.repropack
+./bin/repropack validate clean.repropack
 ```
 
-```bash
-repropack scan crash.repropack && repropack redact crash.repropack -o clean.repropack
-```
-
-```bash
-repropack validate clean.repropack      # exit 0 valid, 1 invalid, 2 usage
-```
+`scan` returns exit status 1 when it finds possible sensitive text. Review images and recordings yourself before sharing a report. [Installation and verification](docs/install.md)
 
 ### SDK (alongside your existing logger)
+
+Start with the [local SDK installation](docs/install.md#sdk). The recorder wraps your existing `log/slog` handler.
 
 ```go
 rec := sdk.New(sdk.Options{
@@ -64,8 +64,10 @@ rec := sdk.New(sdk.Options{
 logger := slog.New(rec.Handler(slog.NewJSONHandler(os.Stderr, nil))) // your output is unchanged
 defer rec.CapturePanic("crash.repropack")                            // writes a report, then re-panics
 
-// When a user clicks "Report a problem":
-rec.WriteFile("report.repropack", sdk.ReportOptions{Title: "Invoice total is wrong"})
+logger.Warn("Invoice total is wrong", "invoice", "INV-2041")
+if _, err := rec.WriteFile("report.repropack", sdk.ReportOptions{Title: "Invoice total is wrong"}); err != nil {
+    logger.Error("Could not save report", "error", err)
+}
 ```
 
 More in the [SDK guide](docs/sdk.md) and [`examples/`](examples): a minimal program, an existing-slog setup, and an HTTP service with per-request breadcrumbs and spans, panic capture, and a loopback-only report endpoint.
@@ -88,17 +90,16 @@ It also opens reports others send you: an evidence timeline you can brush to fil
 
 ## Evidence
 
-All numbers come from `scripts/bench.sh` on an Apple M-series laptop (Go 1.27.4). Full output: [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+Median of three runs on an Apple M1 Pro with Go 1.27.4. [Method and raw output](docs/BENCHMARKS.md)
 
 | Operation | Result |
 |---|---|
-| Record a log line with redaction on (SDK) | ~0.7 µs, 4 allocs |
-| Record a log line below the level threshold | ~10 ns, 0 allocs |
-| Open and verify a 2 MB report with 10k events | ~19 ms (~114 MB/s) |
-| Write a report from a full 2000-event buffer | ~6 ms |
-| Reject a zip-slip archive | ~2 µs |
+| Record a log line with redaction on (SDK) | 0.714 µs, 4 allocations |
+| Discard a log line below the level threshold | 7.1 ns, no allocations |
+| Open and verify a 10,000-event fixture with a 2 MiB attachment | 19.0 ms (113.38 MB/s) |
+| Write a report from 2,000 buffered events | 2.84 ms |
 
-Tests cover all six Go packages plus the desktop backend under `-race`, an end-to-end CLI suite, 16 malicious-archive cases, and fuzzers for the reader, the event parser, redaction and OTLP import ([results](docs/BENCHMARKS.md#fuzzing)).
+`make test` runs the Go race detector for the core and desktop packages, the end-to-end CLI suite and the frontend unit tests. The reader, event parser, redaction and OTLP import each passed a 90-second fuzzing run. [Fuzzing results](docs/BENCHMARKS.md#fuzzing)
 
 ## Documentation
 
@@ -108,6 +109,7 @@ Tests cover all six Go packages plus the desktop backend under `-race`, an end-t
 - [Desktop design and accessibility](docs/desktop.md)
 - [Security and threat model](SECURITY.md)
 - [Versioning and compatibility](docs/VERSIONING.md) · [Changelog](CHANGELOG.md) · [Roadmap](docs/ROADMAP.md)
+- [Release preparation](docs/RELEASING.md) · [Adoption and integrations](docs/ADOPTION.md)
 - [Contributing](CONTRIBUTING.md)
 
 ## Status

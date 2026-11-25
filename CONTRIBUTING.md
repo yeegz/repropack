@@ -38,3 +38,9 @@ cd desktop && wails dev
 - Run `gofmt`, `go vet ./...`, the tests above, and `svelte-check` with no errors.
 - Describe *why* in the PR. Link to the spec section if the format is affected.
 - Be kind. We follow the [Contributor Covenant 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
+
+## First contributions
+
+- Run the CLI and SDK quick starts on a clean Windows or Linux machine and document a setup step that is easy to miss.
+- Add an independent language example that reads the manifest and checks the per-file SHA-256 using the [format examples](spec/examples).
+- Reproduce one of the [documented desktop accessibility flows](docs/desktop.md#accessibility-checklist) with a keyboard and report where focus becomes hard to follow.

@@ -66,7 +66,7 @@ func main() {
 				continue
 			}
 			a := acc[3] / float64(S*S) // coverage-weighted alpha
-			cov := acc[3] / 255          // number of covered samples
+			cov := acc[3] / 255        // number of covered samples
 			img.SetNRGBA(x, y, color.NRGBA{uint8(acc[0] / cov), uint8(acc[1] / cov), uint8(acc[2] / cov), uint8(a)})
 		}
 	}
